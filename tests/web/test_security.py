@@ -184,6 +184,25 @@ def test_csrf_rejects_authenticated_posts_without_the_app_header(
     ).status_code == 403
 
 
+def test_first_run_setup_is_a_plain_form_post_without_the_app_header(
+    web: WebFixture,
+):
+    # The setup page is a bare template: the browser submits a plain form with
+    # no way to attach X-CR8-Request. CSRF must let it through, like /login.
+    response = web.owner.post(
+        "/setup",
+        data={
+            "username": "hareesh",
+            "display": "Hareesh",
+            "password": "correct horse battery staple",
+        },
+        follow_redirects=False,
+    )
+    assert response.status_code == 303
+    assert response.headers["location"] == "/"
+    assert web.owner.get("/api/needs-setup").json() == {"needs_setup": False}
+
+
 def test_media_containment_rejects_symlink_and_poisoned_row(
     web: WebFixture, owner: TestClient
 ):
