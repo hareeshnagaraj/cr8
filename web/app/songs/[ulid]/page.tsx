@@ -2,9 +2,9 @@
 
 import {use, useCallback, useEffect, useRef, useState} from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import {usePlayer, usePlayerTimeline, type Track} from "@/components/PlayerProvider";
 import {Waveform} from "@/components/Waveform";
-import {LiveSpectrum} from "@/components/LiveSpectrum";
 import {Inspector} from "@/components/Inspector";
 import {DownloadMenu} from "@/components/DownloadMenu";
 import {SendToDialog} from "@/components/SendToDialog";
@@ -18,6 +18,11 @@ import {
   IconShare,
   IconTag,
 } from "@/components/Icons";
+
+const LiveSpectrum = dynamic(
+  () => import("@/components/LiveSpectrum").then((m) => m.LiveSpectrum),
+  {ssr: false},
+);
 
 // What this page is for.
 //

@@ -98,8 +98,29 @@ export function CollectionShareDialog({
   }, [collectionUlid, reload]);
 
   useEffect(() => {
-    const timer = window.setInterval(() => setNow(Date.now()), 30_000);
-    return () => window.clearInterval(timer);
+    let timer: number | undefined;
+    const stop = () => {
+      if (timer === undefined) return;
+      window.clearInterval(timer);
+      timer = undefined;
+    };
+    const start = () => {
+      if (document.visibilityState === "hidden" || timer !== undefined) return;
+      setNow(Date.now());
+      timer = window.setInterval(() => setNow(Date.now()), 30_000);
+    };
+    const visibilityChanged = () => {
+      stop();
+      if (document.visibilityState === "visible") start();
+    };
+    start();
+    document.addEventListener("visibilitychange", visibilityChanged);
+    window.addEventListener("pageshow", visibilityChanged);
+    return () => {
+      stop();
+      document.removeEventListener("visibilitychange", visibilityChanged);
+      window.removeEventListener("pageshow", visibilityChanged);
+    };
   }, []);
 
   useEffect(() => () => {

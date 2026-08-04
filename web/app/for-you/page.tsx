@@ -51,8 +51,15 @@ export default function ForYou() {
   // Listening marks things heard on the server; reflect that when the person
   // comes back to this tab rather than making them reload.
   useEffect(() => {
-    window.addEventListener("focus", load);
-    return () => window.removeEventListener("focus", load);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") load();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("pageshow", onVisible);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("pageshow", onVisible);
+    };
   }, [load]);
 
   async function close(ulid: string, action: "done" | "dismiss") {

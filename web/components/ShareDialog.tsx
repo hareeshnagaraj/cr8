@@ -46,6 +46,8 @@ export function ShareDialog({
   const [now, setNow] = useState(() => Date.now());
   const closeRef = useRef<HTMLButtonElement | null>(null);
   const revokeTimer = useRef<number | null>(null);
+  const copyTimer = useRef<number | null>(null);
+  const publicCopyTimer = useRef<number | null>(null);
   const url =
     typeof window === "undefined"
       ? ""
@@ -87,19 +89,43 @@ export function ShareDialog({
   }, [reloadLinks, track.bounce_ulid]);
 
   useEffect(() => {
-    const timer = window.setInterval(() => setNow(Date.now()), 30_000);
-    return () => window.clearInterval(timer);
+    let timer: number | undefined;
+    const stop = () => {
+      if (timer === undefined) return;
+      window.clearInterval(timer);
+      timer = undefined;
+    };
+    const start = () => {
+      if (document.visibilityState === "hidden" || timer !== undefined) return;
+      setNow(Date.now());
+      timer = window.setInterval(() => setNow(Date.now()), 30_000);
+    };
+    const visibilityChanged = () => {
+      stop();
+      if (document.visibilityState === "visible") start();
+    };
+    start();
+    document.addEventListener("visibilitychange", visibilityChanged);
+    window.addEventListener("pageshow", visibilityChanged);
+    return () => {
+      stop();
+      document.removeEventListener("visibilitychange", visibilityChanged);
+      window.removeEventListener("pageshow", visibilityChanged);
+    };
   }, []);
 
   useEffect(() => () => {
     if (revokeTimer.current !== null) window.clearTimeout(revokeTimer.current);
+    if (copyTimer.current !== null) window.clearTimeout(copyTimer.current);
+    if (publicCopyTimer.current !== null) window.clearTimeout(publicCopyTimer.current);
   }, []);
 
   async function copyMemberLink() {
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
-      window.setTimeout(() => setCopied(false), 2400);
+      if (copyTimer.current !== null) window.clearTimeout(copyTimer.current);
+      copyTimer.current = window.setTimeout(() => setCopied(false), 2400);
     } catch {
       window.prompt("Copy this link", url);
     }
@@ -135,7 +161,8 @@ export function ShareDialog({
     try {
       await navigator.clipboard.writeText(mintedShare.url);
       setPublicCopied(true);
-      window.setTimeout(() => setPublicCopied(false), 2400);
+      if (publicCopyTimer.current !== null) window.clearTimeout(publicCopyTimer.current);
+      publicCopyTimer.current = window.setTimeout(() => setPublicCopied(false), 2400);
     } catch {
       window.prompt("Copy this public link", mintedShare.url);
     }

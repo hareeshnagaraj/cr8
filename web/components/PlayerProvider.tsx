@@ -263,9 +263,15 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
         if (src) audio.src = src;
       }, () => undefined);
     };
-    ["pointerdown", "keydown", "touchstart"].forEach((name) =>
-      document.addEventListener(name, arm, {once: true, capture: true}),
-    );
+    const names = ["pointerdown", "keydown", "touchstart"] as const;
+    for (const name of names) {
+      document.addEventListener(name, arm, {once: true, capture: true});
+    }
+    return () => {
+      for (const name of names) {
+        document.removeEventListener(name, arm, {capture: true});
+      }
+    };
   }, []);
 
   const next = useCallback(() => {
@@ -285,7 +291,18 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
-    const onTime = () => setPosition(audio.currentTime);
+    // High-frequency timeupdate while A2HS-hidden still drives TimelineCtx and
+    // the dock scrub. Skip position churn when hidden; snap once on return.
+    const syncTimeline = () => {
+      setPosition(audio.currentTime);
+      if (Number.isFinite(audio.duration) && audio.duration > 0) {
+        setDuration(audio.duration);
+      }
+    };
+    const onTime = () => {
+      if (document.hidden) return;
+      setPosition(audio.currentTime);
+    };
     const onMeta = () => setDuration(audio.duration || 0);
     const onEnd = () => next();
     const settleContext = (shouldPlay: boolean) => {
@@ -313,27 +330,49 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
       setPlaying(false);
       settleContext(false);
     };
+    const resumeContextIfPlaying = () => {
+      if (!audioPlayingRef.current) return;
+      audioContextRef.current?.resume().catch(() => undefined);
+    };
+    const onVisible = () => {
+      if (document.visibilityState !== "visible") return;
+      syncTimeline();
+      resumeContextIfPlaying();
+    };
+    const onPageshow = () => {
+      syncTimeline();
+      resumeContextIfPlaying();
+    };
     audio.addEventListener("timeupdate", onTime);
     audio.addEventListener("loadedmetadata", onMeta);
     audio.addEventListener("ended", onEnd);
     audio.addEventListener("play", onPlay);
     audio.addEventListener("pause", onPause);
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("pageshow", onPageshow);
     return () => {
       audio.removeEventListener("timeupdate", onTime);
       audio.removeEventListener("loadedmetadata", onMeta);
       audio.removeEventListener("ended", onEnd);
       audio.removeEventListener("play", onPlay);
       audio.removeEventListener("pause", onPause);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("pageshow", onPageshow);
     };
   }, [next]);
 
   // Report what actually got listened to. Without this "unheard", the dig
   // queue, and anything someone put on your plate never learn that you played
   // it — the whole port ran this way and recorded nothing.
+  // Interval runs only while a track is present, audio is playing, and the
+  // document is visible. Audio itself keeps going when hidden (pocket /
+  // MediaSession); we stop the 1s timer and reconcile pocket seconds from
+  // audio.currentTime when the tab returns.
   const heard = useRef({ulid: "", seconds: 0, sent: 0});
+  const heardHiddenAt = useRef<number | null>(null);
   useEffect(() => {
     const audio = audioRef.current;
-    if (!audio) return;
+    if (!audio || !current?.bounce_ulid) return;
 
     const post = (ulid: string, seconds: number, started = false) => {
       if (!ulid) return;
@@ -351,7 +390,7 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
     };
 
     const tick = () => {
-      const ulid = current?.bounce_ulid ?? "";
+      const ulid = current.bounce_ulid;
       if (!ulid || audio.paused) return;
       if (heard.current.ulid !== ulid) {
         // Flush what the previous track earned before switching away.
@@ -370,16 +409,87 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
       }
     };
 
-    const timer = setInterval(tick, 1000);
+    let timer: ReturnType<typeof setInterval> | undefined;
     const flush = () => {
       if (heard.current.ulid && heard.current.seconds > heard.current.sent) {
         post(heard.current.ulid, heard.current.seconds);
         heard.current.sent = heard.current.seconds;
       }
     };
+    const stop = () => {
+      if (timer === undefined) return;
+      clearInterval(timer);
+      timer = undefined;
+    };
+    const start = () => {
+      if (
+        document.visibilityState !== "visible" ||
+        audio.paused ||
+        timer !== undefined
+      ) return;
+      timer = setInterval(tick, 1000);
+    };
+    const reconcileHidden = () => {
+      const snap = heardHiddenAt.current;
+      heardHiddenAt.current = null;
+      if (snap === null) return;
+      // currentTime delta, not wall clock — paused stretches invent nothing.
+      const gained = Math.min(Math.max(0, audio.currentTime - snap), 3600);
+      if (gained < 0.5) return;
+      heard.current.seconds += gained;
+    };
+    const sync = () => {
+      stop();
+      if (document.visibilityState === "hidden") {
+        if (audio.paused) {
+          // Freeze the pocket stretch now so a later seek/play starts clean.
+          reconcileHidden();
+        } else if (heardHiddenAt.current === null) {
+          // Play while already hidden (lock screen / MediaSession) never
+          // sees a hide transition — snap here or pocket seconds are lost.
+          heardHiddenAt.current = audio.currentTime;
+        }
+        return;
+      }
+      if (!audio.paused) start();
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") {
+        reconcileHidden();
+        flush();
+        sync();
+      } else {
+        stop();
+        heardHiddenAt.current = audio.paused ? null : audio.currentTime;
+        flush();
+      }
+    };
+    const onPageshow = () => {
+      if (document.visibilityState !== "visible") return;
+      reconcileHidden();
+      flush();
+      sync();
+    };
+
+    if (document.visibilityState === "hidden" && !audio.paused) {
+      heardHiddenAt.current = audio.currentTime;
+    } else {
+      start();
+    }
+    audio.addEventListener("play", sync);
+    audio.addEventListener("pause", sync);
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("pageshow", onPageshow);
     window.addEventListener("pagehide", flush);
     return () => {
-      clearInterval(timer);
+      stop();
+      // Reconcile before teardown — nulling first drops pocket seconds on
+      // track change / effect re-run while still backgrounded.
+      reconcileHidden();
+      audio.removeEventListener("play", sync);
+      audio.removeEventListener("pause", sync);
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("pageshow", onPageshow);
       window.removeEventListener("pagehide", flush);
       flush();
     };
@@ -478,14 +588,19 @@ export function PlayerProvider({children}: {children: React.ReactNode}) {
     // competed with the buffer for "now". The play-probe gate caught it.
     const upcoming = queue[index + 1];
     if (upcoming) {
+      const warmAbort = new AbortController();
       const warm = window.setTimeout(() => {
         fetch(`/m/${upcoming.bounce_ulid}`, {
           headers: {Range: "bytes=0-524287"},
           credentials: "same-origin",
           priority: "low",
+          signal: warmAbort.signal,
         }).catch(() => undefined);
       }, 4000);
-      return () => window.clearTimeout(warm);
+      return () => {
+        window.clearTimeout(warm);
+        warmAbort.abort();
+      };
     }
   }, [current, index, queue, snapshot.cued, snapshot.replay]);
 

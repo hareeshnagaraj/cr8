@@ -1,6 +1,6 @@
 "use client";
 
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {Menu} from "./Menu";
 import {useMembers} from "@/lib/members";
 
@@ -20,6 +20,8 @@ export function SendToDialog({
   const [note, setNote] = useState("");
   const [state, setState] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [message, setMessage] = useState("");
+  const closeTimer = useRef<number | null>(null);
+  const liveRef = useRef(true);
   const selectedMember = members.find((member) => member.username === to);
 
   useEffect(() => {
@@ -36,6 +38,14 @@ export function SendToDialog({
     return () => window.removeEventListener("keydown", escape);
   }, [onClose]);
 
+  useEffect(() => {
+    liveRef.current = true;
+    return () => {
+      liveRef.current = false;
+      if (closeTimer.current !== null) window.clearTimeout(closeTimer.current);
+    };
+  }, []);
+
   async function send(event: React.FormEvent) {
     event.preventDefault();
     if (state === "sending" || !to) return;
@@ -49,14 +59,17 @@ export function SendToDialog({
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.detail ?? "could not send it");
+      if (!liveRef.current) return;
       setState("sent");
       setMessage(
         data.created
           ? `On ${to}'s plate.`
           : `${to} already has this one.`,
       );
-      setTimeout(onClose, 1100);
+      if (closeTimer.current !== null) window.clearTimeout(closeTimer.current);
+      closeTimer.current = window.setTimeout(onClose, 1100);
     } catch (problem) {
+      if (!liveRef.current) return;
       setState("error");
       setMessage(problem instanceof Error ? problem.message : "something went wrong");
     }

@@ -21,6 +21,32 @@ function clock(seconds: number) {
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
+// High-frequency position/duration live here so Shell (rail, presence, dock
+// chrome) does not re-render on every timeline tick.
+function DockScrub({
+  bounceUlid,
+  seek,
+  accent,
+}: {
+  bounceUlid: string;
+  seek: (fraction: number) => void;
+  accent?: string;
+}) {
+  const {position, duration} = usePlayerTimeline();
+  return (
+    <div className="dock-scrub">
+      <span className="num dock-time">{clock(position)}</span>
+      <Waveform
+        bounceUlid={bounceUlid}
+        progress={duration ? position / duration : 0}
+        onSeek={seek}
+        accent={accent}
+      />
+      <span className="num dock-time">{clock(duration)}</span>
+    </div>
+  );
+}
+
 const NAV = [
   {href: "/", label: "Library", subtitle: "everything, filtered your way", group: "listening", adminOnly: false},
   {href: "/dig", label: "Dig", subtitle: "what the crate forgot", group: "listening", adminOnly: false},
@@ -97,17 +123,19 @@ function usePresence(enabled: boolean) {
       // one poll. Visible tabs only, so the cost stays bounded.
       timer = setInterval(() => void load(), 10_000);
     };
-    const visibilityChanged = () => {
+    const onVisible = () => {
       stop();
       if (document.visibilityState === "visible") start();
     };
 
     start();
-    document.addEventListener("visibilitychange", visibilityChanged);
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("pageshow", onVisible);
     return () => {
       live = false;
       stop();
-      document.removeEventListener("visibilitychange", visibilityChanged);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("pageshow", onVisible);
     };
   }, [enabled]);
 
@@ -119,7 +147,6 @@ export function Shell({children}: {children: React.ReactNode}) {
     queue, index, current, playing, repeat,
     toggle, next, prev, seek, cycleRepeat, jumpTo, move, removeAt,
   } = usePlayer();
-  const {position, duration} = usePlayerTimeline();
   const pathname = usePathname();
   const [eras, setEras] = useState<Record<string, string>>({});
   const [isAdmin, setIsAdmin] = useState(false);
@@ -159,23 +186,42 @@ export function Shell({children}: {children: React.ReactNode}) {
   }, [bare]);
 
   // The badge is the whole point of homework: you should not have to go looking
-  // for it. Cheap count endpoint, polled, plus an immediate refresh whenever the
-  // tab comes back to the front.
+  // for it. Cheap count endpoint, polled only while visible — same lifecycle
+  // as usePresence so a backgrounded A2HS tab does not keep firing forever.
   useEffect(() => {
     if (bare) return;
     let live = true;
+    let timer: ReturnType<typeof setInterval> | undefined;
     const read = () =>
       fetch("/api/assignments/count", {credentials: "same-origin"})
         .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
-        .then((data) => live && setHomework(Number(data.pending ?? 0)))
+        .then((data) => {
+          if (live) setHomework(Number(data.pending ?? 0));
+        })
         .catch(() => undefined);
-    read();
-    const timer = setInterval(read, 60_000);
-    window.addEventListener("focus", read);
+    const stop = () => {
+      if (timer === undefined) return;
+      clearInterval(timer);
+      timer = undefined;
+    };
+    const start = () => {
+      if (document.visibilityState === "hidden" || timer !== undefined) return;
+      void read();
+      timer = setInterval(() => void read(), 60_000);
+    };
+    const onVisible = () => {
+      stop();
+      if (document.visibilityState === "visible") start();
+    };
+
+    start();
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("pageshow", onVisible);
     return () => {
       live = false;
-      clearInterval(timer);
-      window.removeEventListener("focus", read);
+      stop();
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("pageshow", onVisible);
     };
   }, [bare, pathname]);
 
@@ -341,16 +387,11 @@ export function Shell({children}: {children: React.ReactNode}) {
                 <IconMore />
               </button>
             </div>
-            <div className="dock-scrub">
-              <span className="num dock-time">{clock(position)}</span>
-              <Waveform
-                bounceUlid={current.bounce_ulid}
-                progress={duration ? position / duration : 0}
-                onSeek={seek}
-                accent={current.era ? eras[current.era] : undefined}
-              />
-              <span className="num dock-time">{clock(duration)}</span>
-            </div>
+            <DockScrub
+              bounceUlid={current.bounce_ulid}
+              seek={seek}
+              accent={current.era ? eras[current.era] : undefined}
+            />
           </>
         ) : (
           <div className="dock-empty">Press play anywhere. Tag it while it runs.</div>

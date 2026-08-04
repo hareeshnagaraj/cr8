@@ -1,6 +1,6 @@
 "use client";
 
-import {useCallback, useEffect, useState} from "react";
+import {memo, useCallback, useEffect, useRef, useState} from "react";
 import Link from "next/link";
 import {usePathname} from "next/navigation";
 
@@ -30,7 +30,7 @@ const LABEL: Record<string, string> = {
   problem: "Problems",
 };
 
-export function Inspector({
+export const Inspector = memo(function Inspector({
   track,
   onClose,
   showActions = true,
@@ -48,12 +48,55 @@ export function Inspector({
   const [stems, setStems] = useState<{stem_kind?: string; bounce_ulid?: string}[]>([]);
   const [ripping, setRipping] = useState(false);
   const [eras, setEras] = useState<Record<string, string>>({});
+  const stemPoll = useRef<{
+    interval: number | null;
+    timeout: number | null;
+    ulid: string | null;
+    onResume: (() => void) | null;
+  }>({interval: null, timeout: null, ulid: null, onResume: null});
+  const liveRef = useRef(true);
+  const rippingRef = useRef(false);
 
-  const load = useCallback(async (songUlid: string) => {
-    const response = await fetch(`/api/songs/${songUlid}`, {
-      credentials: "same-origin",
-    });
-    if (response.ok) setPanel(await response.json());
+  const clearStemPoll = useCallback(() => {
+    if (stemPoll.current.interval !== null) {
+      window.clearInterval(stemPoll.current.interval);
+      stemPoll.current.interval = null;
+    }
+    if (stemPoll.current.timeout !== null) {
+      window.clearTimeout(stemPoll.current.timeout);
+      stemPoll.current.timeout = null;
+    }
+    if (stemPoll.current.onResume) {
+      document.removeEventListener("visibilitychange", stemPoll.current.onResume);
+      window.removeEventListener("pageshow", stemPoll.current.onResume);
+      stemPoll.current.onResume = null;
+    }
+    stemPoll.current.ulid = null;
+  }, []);
+
+  useEffect(() => {
+    liveRef.current = true;
+    return () => {
+      liveRef.current = false;
+      clearStemPoll();
+    };
+  }, [clearStemPoll]);
+
+  useEffect(() => {
+    rippingRef.current = ripping;
+  }, [ripping]);
+
+  const load = useCallback(async (songUlid: string, signal?: AbortSignal) => {
+    try {
+      const response = await fetch(`/api/songs/${songUlid}`, {
+        credentials: "same-origin",
+        signal,
+      });
+      if (signal?.aborted || !liveRef.current) return;
+      if (response.ok) setPanel(await response.json());
+    } catch {
+      // Aborted or network — leave the panel alone.
+    }
   }, []);
 
   useEffect(() => {
@@ -61,29 +104,43 @@ export function Inspector({
       setPanel(null);
       return;
     }
+    const abort = new AbortController();
     setPanel(null);
-    load(track.song_ulid);
+    void load(track.song_ulid, abort.signal);
+    return () => abort.abort();
   }, [track?.song_ulid, load]);
 
   useEffect(() => {
     getEras()
-      .then((eras) => setEras(colorsByName(eras)))
+      .then((eras) => {
+        if (liveRef.current) setEras(colorsByName(eras));
+      })
       .catch(() => undefined);
   }, []);
 
   useEffect(() => {
     if (!track) return;
+    const abort = new AbortController();
     setStems([]);
-    fetch(`/api/stems/${track.bounce_ulid}`, {credentials: "same-origin"})
+    fetch(`/api/stems/${track.bounce_ulid}`, {
+      credentials: "same-origin",
+      signal: abort.signal,
+    })
       .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
-      .then(setStems)
-      .catch(() => setStems([]));
+      .then((data) => {
+        if (liveRef.current && !abort.signal.aborted) setStems(data);
+      })
+      .catch(() => {
+        if (liveRef.current && !abort.signal.aborted) setStems([]);
+      });
+    return () => abort.abort();
   }, [track?.bounce_ulid]);
 
   // Separating stems used to mean navigating to the song page and finding a
   // button. It is one click from wherever you are listening.
   async function rip() {
     if (!track) return;
+    clearStemPoll();
     setRipping(true);
     // Check the result. This POST 404'd for the entire port because the path
     // was never proxied, and swallowing the response meant the button just
@@ -98,26 +155,59 @@ export function Inspector({
       body: new URLSearchParams({recipe: "default-v1"}),
     }).catch(() => undefined);
     if (!queued || !queued.ok) {
-      setRipping(false);
+      if (liveRef.current) setRipping(false);
       return;
     }
+    if (!liveRef.current) return;
     const ulid = track.bounce_ulid;
-    const poll = window.setInterval(async () => {
+    stemPoll.current.ulid = ulid;
+
+    const pollTick = async () => {
       const response = await fetch(`/api/stems/${ulid}`, {
         credentials: "same-origin",
       });
-      if (!response.ok) return;
+      if (!response.ok || !liveRef.current) return;
       const fresh = await response.json();
       if (fresh.length) {
-        setStems(fresh);
-        setRipping(false);
-        window.clearInterval(poll);
+        clearStemPoll();
+        if (liveRef.current) {
+          setStems(fresh);
+          setRipping(false);
+        }
       }
-    }, 5000);
-    window.setTimeout(() => {
-      window.clearInterval(poll);
-      setRipping(false);
+    };
+    const startPoll = () => {
+      if (
+        document.visibilityState === "hidden" ||
+        stemPoll.current.interval !== null ||
+        stemPoll.current.ulid !== ulid
+      ) return;
+      stemPoll.current.interval = window.setInterval(() => {
+        void pollTick();
+      }, 5000);
+    };
+    const onResume = () => {
+      if (stemPoll.current.ulid !== ulid) return;
+      if (document.visibilityState === "hidden") {
+        if (stemPoll.current.interval !== null) {
+          window.clearInterval(stemPoll.current.interval);
+          stemPoll.current.interval = null;
+        }
+        return;
+      }
+      if (rippingRef.current) {
+        void pollTick();
+        startPoll();
+      }
+    };
+    stemPoll.current.onResume = onResume;
+    document.addEventListener("visibilitychange", onResume);
+    window.addEventListener("pageshow", onResume);
+    stemPoll.current.timeout = window.setTimeout(() => {
+      clearStemPoll();
+      if (liveRef.current) setRipping(false);
     }, 300000);
+    startPoll();
   }
 
   async function toggle(dim: string, value: string) {
@@ -161,7 +251,7 @@ export function Inspector({
       return false;
     } finally {
       await load(track.song_ulid);
-      setPending(null);
+      if (liveRef.current) setPending(null);
     }
   }
 
@@ -383,4 +473,4 @@ export function Inspector({
       </section>
     </aside>
   );
-}
+});
