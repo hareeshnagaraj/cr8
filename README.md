@@ -134,7 +134,7 @@ writes a session secret if missing, and prints the next steps.
 
 ---
 
-## For collaborators (Henry and friends)
+## For collaborators
 
 1. Clone this repo (public).
 2. `cr8 init` with **your** corpus root (or empty curated lists and scan what you choose).
