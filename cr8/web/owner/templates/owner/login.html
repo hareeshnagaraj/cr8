@@ -1,0 +1,14 @@
+{% extends "owner/auth_base.html" %}
+{% block title %}cr8 login{% endblock %}
+{% block auth %}
+  <div class="micro">member login</div>
+  <h1>cr8</h1>
+  <form class="auth-form" action="/login" method="post" data-cr8-form>
+    <label class="micro" for="username">username</label>
+    <input id="username" name="username" type="text" autocomplete="username" required maxlength="40">
+    <label class="micro" for="password">password</label>
+    <input id="password" name="password" type="password" autocomplete="current-password" required>
+    {% if error %}<p class="error">{{ error }}</p>{% endif %}
+    <button class="button primary" type="submit">Open library</button>
+  </form>
+{% endblock %}

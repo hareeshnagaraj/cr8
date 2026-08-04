@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Pick up new audio and mirror it.
+
+  On a polling interval rather than WatchPaths. The laptop's version watches a
+  hand-written list of every curated directory, which drifts the moment one is
+  added and cannot be checked; here the corpus arrives by rsync on its own
+  timer, so there is nothing to be gained by reacting faster than that copy
+  runs, and a plain interval has no list to keep in step with anything.
+
+  Deliberately lower priority than the app. This walks eleven thousand files
+  and hashes whatever changed, and the person listening should never be able to
+  tell it is running. ThrottleInterval is the floor launchd enforces between
+  starts; a tick that overruns it simply does not double up, because the ingest
+  lock is non-blocking and a second one exits immediately.
+
+  Install:
+    sed -e "s|__HOME__|$HOME|g" -e "s|__APP__|$PWD|g" ops/launchd/com.cr8.ingest.plist \
+      > ~/Library/LaunchAgents/com.cr8.ingest.plist
+    launchctl load ~/Library/LaunchAgents/com.cr8.ingest.plist
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.cr8.ingest</string>
+  <key>WorkingDirectory</key><string>__APP__</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>__APP__/.venv/bin/python3</string>
+    <string>-m</string><string>cr8.cli</string>
+    <string>--config</string><string>__APP__/config.toml</string>
+    <string>--db</string><string>__APP__/catalog.db</string>
+    <string>ingest-tick</string>
+  </array>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <!-- A LaunchAgent gets no login shell, so Homebrew is not on PATH and
+         ffmpeg, ffprobe and audiowaveform vanish. The build then refuses to
+         run and every new bounce sits unmirrored. -->
+    <key>PATH</key><string>/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+  </dict>
+  <key>StartInterval</key><integer>300</integer>
+  <key>RunAtLoad</key><false/>
+  <key>ThrottleInterval</key><integer>300</integer>
+  <key>Nice</key><integer>10</integer>
+  <key>LowPriorityIO</key><true/>
+  <key>ProcessType</key><string>Background</string>
+  <!-- Not in the repo: macOS refuses a LaunchAgent write access inside
+       ~/Music and the job dies with EX_CONFIG before the program runs. -->
+  <key>StandardOutPath</key><string>__HOME__/Library/Logs/cr8-ingest.log</string>
+  <key>StandardErrorPath</key><string>__HOME__/Library/Logs/cr8-ingest.log</string>
+</dict>
+</plist>

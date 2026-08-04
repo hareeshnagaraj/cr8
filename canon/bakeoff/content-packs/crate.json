@@ -1,0 +1,54 @@
+{
+  "_meta": {
+    "frozen": "2026-07-29",
+    "rule": "Real catalog data only. Same content across every mockup so design is the only variable. Content invention banned.",
+    "source": "catalog.db, real scan of Working : Scratch"
+  },
+  "app_name": "cr8",
+  "owner": "Hareesh",
+  "library": [
+    {"title": "Seeyouinthesummer", "key": "C# minor", "camelot": "12A", "date": "2026-07-22", "versions": 4, "dur": "3:49", "era": "working"},
+    {"title": "Stayhere", "key": "C minor", "camelot": "5A", "date": "2026-07-29", "versions": 2, "dur": "3:04", "era": "working", "fresh": true},
+    {"title": "Skylinedrive", "key": "E major", "camelot": "12B", "date": "2026-07-09", "versions": 1, "dur": "1:14", "era": "working", "sketch": true},
+    {"title": "Idontwannaneedu", "key": "F# major", "camelot": "2B", "date": "2026-01-15", "versions": 3, "dur": "3:20", "era": "working"},
+    {"title": "Pensive Arpey", "key": "G minor", "camelot": "6A", "date": "2026-01-03", "versions": 4, "dur": "3:12", "era": "working"},
+    {"title": "Kissmenomakeup", "key": "C# minor", "camelot": "12A", "date": "2025-12-13", "versions": 7, "dur": "2:38", "era": "NOVA1"},
+    {"title": "Dalepapi", "key": "E minor", "camelot": "9A", "date": "2025-12-09", "versions": 6, "dur": "2:29", "era": "NOVA1"},
+    {"title": "Justablur", "key": null, "camelot": null, "date": "2025-11-12", "versions": 7, "dur": "3:25", "era": "NOVA1"},
+    {"title": "Diamond", "key": "B minor", "camelot": "10A", "date": "2025-11-17", "versions": 5, "dur": "3:40", "era": "NOVA1"},
+    {"title": "Ibring", "key": "F# minor", "camelot": "11A", "date": "2025-11-14", "versions": 6, "dur": "1:12", "era": "NOVA1", "sketch": true},
+    {"title": "Righthere", "key": "C minor", "camelot": "5A", "date": "2025-10-21", "versions": 4, "dur": "3:39", "era": "NOVA1"},
+    {"title": "Northsky", "key": "B minor", "camelot": "10A", "date": "2024-05-06", "versions": 5, "dur": "3:22", "era": "PELICANA"},
+    {"title": "Drownme", "key": "B minor", "camelot": "10A", "date": "2024-01-13", "versions": 1, "dur": "2:57", "era": "PELICANA"},
+    {"title": "Jine", "key": "F minor", "camelot": "4A", "date": "2023-12-08", "versions": 2, "dur": "5:35", "era": "PELICANA"}
+  ],
+  "now_playing": {
+    "title": "Kissmenomakeup", "version_label": "v7 · Dec 13", "key": "C# minor", "camelot": "12A",
+    "bpm": null, "dur": "2:38", "pos": "1:04", "era": "NOVA1",
+    "version_chain": ["v1 · Dec 13", "v2 · Dec 14", "v3 · Dec 18", "v4 · Dec 21", "v5 · Dec 28", "v6 · Jan 2", "v7 · Jan 3"]
+  },
+  "listen_through": {
+    "label": "for EJ — new batch",
+    "sent": "Jul 29",
+    "count": 6, "est_minutes": 18,
+    "tracks": ["Seeyouinthesummer", "Stayhere", "Idontwannaneedu", "Pensive Arpey", "Kissmenomakeup", "Diamond"],
+    "guest_name": "EJ",
+    "progress_example": {"heard": 4, "hearted": ["Stayhere", "Kissmenomakeup"], "skipped": ["Pensive Arpey"]}
+  },
+  "vocab": {
+    "status": ["idea", "jam", "demo", "mixed", "finished"],
+    "vibe_chips_frequent": ["dreamy", "heavy", "glittery", "late-night", "acoustic", "bouncy"],
+    "instr": ["gtr", "synth", "vox", "bass", "keys", "hangdrum"],
+    "collabs": ["henry", "connor", "suraj", "aditya", "rohiit", "EJ"]
+  },
+  "eras": [
+    {"name": "PELICANA", "range": "2023–24"},
+    {"name": "NOVA1", "range": "2024–25"},
+    {"name": "working", "range": "2026"}
+  ],
+  "activity": [
+    {"actor": "EJ", "action": "hearted", "target": "Stayhere", "when": "2h ago"},
+    {"actor": "EJ", "action": "tagged dreamy", "target": "Kissmenomakeup", "when": "2h ago"},
+    {"actor": "henry", "action": "hearted", "target": "Diamond", "when": "yesterday"}
+  ]
+}

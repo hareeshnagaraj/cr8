@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>{{ album_title }}</title>
+  {% if og_url %}
+  <meta property="og:type" content="music.playlist">
+  <meta property="og:site_name" content="cr8">
+  <meta property="og:title" content="{{ album_title }}">
+  <meta property="og:description" content="{{ og_description }}">
+  <meta property="og:url" content="{{ og_url }}">
+  {% if og_image %}
+  <meta property="og:image" content="{{ og_image }}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="1200">
+  <meta property="og:image:alt" content="{{ album_title }}">
+  <meta name="twitter:image" content="{{ og_image }}">
+  {% endif %}
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ album_title }}">
+  <meta name="twitter:description" content="{{ og_description }}">
+  {% endif %}
+  <style>
+    :root {
+      color-scheme: dark;
+      --ground: #0d0d0f;
+      --raise: #141416;
+      --card: #1a1a1d;
+      --line: rgba(255, 255, 255, .075);
+      --line-strong: rgba(255, 255, 255, .14);
+      --t1: rgba(255, 255, 255, .94);
+      --t2: rgba(255, 255, 255, .6);
+      --t3: rgba(255, 255, 255, .36);
+      --r-s: 6px;
+      --r-m: 10px;
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --nums: ui-monospace, "SF Mono", Menlo, monospace;
+    }
+    * { box-sizing: border-box; }
+    html { min-width: 320px; background: var(--ground); }
+    body {
+      min-height: 100vh; margin: 0; color: var(--t1); background: var(--ground);
+      font: 14px/1.5 var(--sans); font-synthesis: none;
+      -webkit-font-smoothing: antialiased;
+    }
+    main { width: min(100%, 760px); margin: 0 auto; padding: 18px 16px 42px; }
+    .art-wall {
+      display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 4px; margin-bottom: 30px;
+    }
+    .art {
+      position: relative; aspect-ratio: 1; overflow: hidden;
+      background: var(--era, var(--raise)); border-radius: var(--r-s);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .1);
+    }
+    .art img { display: block; width: 100%; height: 100%; object-fit: cover; }
+    .album-kicker {
+      margin: 0 0 7px; color: var(--t3); font: 10px/1.2 var(--nums);
+      letter-spacing: .12em; text-transform: uppercase;
+    }
+    h1 {
+      margin: 0; font-size: clamp(2rem, 10vw, 4.5rem); line-height: .96;
+      letter-spacing: -.055em; font-weight: 680; overflow-wrap: anywhere;
+      text-wrap: balance;
+    }
+    .note {
+      max-width: 580px; margin: 17px 0 30px; color: var(--t2);
+      font-size: 15px; line-height: 1.6; white-space: pre-line;
+    }
+    .tracklist { margin: 0 0 22px; padding: 0; list-style: none; border-top: 1px solid var(--line); }
+    .track {
+      width: 100%; min-height: 58px; padding: 8px 2px; color: var(--t1);
+      display: grid; grid-template-columns: 32px minmax(0, 1fr) auto;
+      align-items: center; gap: 9px; border: 0; border-bottom: 1px solid var(--line);
+      background: transparent; font: inherit; text-align: left; cursor: pointer;
+    }
+    .track:hover, .track:focus-visible { background: var(--raise); }
+    .track[aria-current="true"] { background: var(--card); }
+    .number, .duration { color: var(--t3); font: 11px/1 var(--nums); }
+    .title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .track[aria-current="true"] .number { color: var(--t1); }
+    .player {
+      position: sticky; bottom: 10px; padding: 13px; background: rgba(26, 26, 29, .94);
+      border: 1px solid var(--line-strong); border-radius: var(--r-m);
+      box-shadow: 0 18px 60px rgba(0, 0, 0, .45); backdrop-filter: blur(14px);
+    }
+    .playing {
+      min-width: 0; margin: 0 0 9px; overflow: hidden; text-overflow: ellipsis;
+      white-space: nowrap; color: var(--t2); font-size: 12px;
+    }
+    audio { display: block; width: 100%; height: 42px; }
+    :focus-visible { outline: 2px solid rgba(255, 255, 255, .65); outline-offset: -2px; }
+    @media (min-width: 580px) {
+      main { padding: 32px 24px 64px; }
+      .art-wall { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-bottom: 44px; }
+      .track { min-height: 62px; padding-inline: 10px; }
+      .player { bottom: 18px; }
+    }
+    @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="art-wall" aria-hidden="true">
+      {% for track in tracks %}
+        <div class="art" style="--era: {{ track.era_color or 'rgba(255,255,255,.14)' }}">
+          <img src="/s/{{ raw_token }}/art?i={{ loop.index0 }}" alt=""{% if not loop.first %} loading="lazy"{% endif %}>
+        </div>
+      {% endfor %}
+    </div>
+
+    <p class="album-kicker">cr8</p>
+    <h1>{{ album_title }}</h1>
+    {% if note %}<p class="note">{{ note }}</p>{% endif %}
+
+    <ol class="tracklist">
+      {% for track in tracks %}
+        <li>
+          <button class="track" type="button" data-index="{{ loop.index0 }}"{% if loop.first %} aria-current="true"{% endif %}>
+            <span class="number">{{ loop.index }}</span>
+            <span class="title">{{ track.title }}</span>
+            <span class="duration">{{ track.duration_label }}</span>
+          </button>
+        </li>
+      {% endfor %}
+    </ol>
+
+    <div class="player">
+      <p class="playing" aria-live="polite">{{ tracks[0].title }}</p>
+      <audio controls controlslist="nodownload noplaybackrate" preload="metadata"
+        data-audio-base="/s/{{ raw_token }}/audio" src="/s/{{ raw_token }}/audio?i=0">
+        Your browser cannot play this audio.
+      </audio>
+    </div>
+  </main>
+  <script>
+    (() => {
+      const audio = document.querySelector("audio");
+      const label = document.querySelector(".playing");
+      const rows = [...document.querySelectorAll(".track")];
+      let index = 0;
+      const select = (next, play) => {
+        if (!rows[next]) return;
+        index = next;
+        rows.forEach((row, at) => row.setAttribute("aria-current", at === index ? "true" : "false"));
+        label.textContent = rows[index].querySelector(".title").textContent;
+        audio.src = `${audio.dataset.audioBase}?i=${index}`;
+        if (play) audio.play().catch(() => undefined);
+      };
+      rows.forEach((row) => row.addEventListener("click", () => select(Number(row.dataset.index), true)));
+      audio.addEventListener("ended", () => select(index + 1, true));
+    })();
+  </script>
+</body>
+</html>

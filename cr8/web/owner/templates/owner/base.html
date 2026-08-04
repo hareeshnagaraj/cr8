@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#191919">
+  <title>{% block title %}cr8{% endblock %}</title>
+  <link rel="manifest" href="/static/manifest.webmanifest?v={{ asset_v }}">
+  <link rel="stylesheet" href="/static/owner.css?v={{ asset_v }}">
+  <script defer src="/static/vendor/htmx-2.0.9.min.js?v={{ asset_v }}"></script>
+  <script defer src="/static/vendor/htmx-ext-sse-2.2.4.js?v={{ asset_v }}"></script>
+  <script defer src="/static/vendor/alpine-csp-3.15.min.js?v={{ asset_v }}"></script>
+  <script defer src="/static/vendor/wavesurfer-7.11.min.js?v={{ asset_v }}"></script>
+  <script defer src="/static/vendor/sortable-1.15.6.min.js?v={{ asset_v }}"></script>
+  <script defer src="/static/playback.js?v={{ asset_v }}"></script>
+  <script defer src="/static/owner.js?v={{ asset_v }}"></script>
+</head>
+<body hx-boost="true" hx-target="#cr8-main" hx-select="#cr8-main"
+  hx-swap="outerHTML show:none" hx-indicator="#global-indicator">
+  <div class="shell">
+    <header class="topbar">
+      <a class="brand" href="/">cr8</a>
+      <nav class="nav" aria-label="Catalog">
+        <a href="/" {% if path == "/" %}aria-current="page"{% endif %}>Library</a>
+        <a href="/tags" {% if path == "/tags" %}aria-current="page"{% endif %}>Tags</a>
+        <a href="/collections" {% if path == "/collections" %}aria-current="page"{% endif %}>Collections</a>
+        <a href="/triage" {% if path == "/triage" %}aria-current="page"{% endif %}>Triage</a>
+        <a href="/activity" {% if path == "/activity" %}aria-current="page"{% endif %}>Activity</a>
+        <a href="/members" {% if path == "/members" %}aria-current="page"{% endif %}>Members</a>
+      </nav>
+      <div class="topbar-gestures" aria-label="Playback entry gestures">
+        <button type="button" data-dig-action="shuffle-all">Shuffle everything</button>
+        <button type="button" data-dig-action="dig" aria-pressed="false">Dig</button>
+        <button type="button" data-dig-action="dig-untagged" aria-pressed="false">Dig untagged</button>
+      </div>
+      <form action="/logout" method="post" data-cr8-form hx-boost="false">
+        <button class="logout mono" type="submit">{{ owner.display }}</button>
+      </form>
+    </header>
+    <main id="cr8-main" class="main {% block main_class %}{% endblock %}" hx-boost="true">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+  <aside id="crate-player" class="player-dock" data-empty="true" data-player-key="owner" hx-preserve data-state="paused">
+    <audio id="crate-audio" preload="auto" hx-preserve></audio>
+    <div class="sr-only" aria-live="polite" aria-atomic="true" data-player-live></div>
+    <div class="player-main">
+      <div class="player-nav">
+        <button class="meta" type="button" data-player-action="previous" aria-label="Previous track">&#8249;</button>
+        <button id="player-play" class="player-play" type="button" data-player-action="toggle"
+          aria-label="Play" data-playing="false">
+          <span class="icon-swap">
+            <svg class="icon-play" viewBox="0 0 20 22" aria-hidden="true"><path d="M0 0l20 11L0 22z"/></svg>
+            <svg class="icon-pause" viewBox="0 0 12 14" aria-hidden="true">
+              <rect x="1" width="3.4" height="14" rx="1"/><rect x="7.6" width="3.4" height="14" rx="1"/>
+            </svg>
+          </span>
+        </button>
+        <button class="meta" type="button" data-player-action="next" aria-label="Next track">&#8250;</button>
+      </div>
+      <button class="player-current" type="button" data-player-reveal
+        aria-label="Reveal the playing song in the library (L)">
+        <span class="player-cover era-unknown" data-player-cover aria-hidden="true">—</span>
+        <span class="player-copy">
+          <span id="player-title" class="player-title">Nothing playing</span>
+          <span id="player-meta" class="player-meta mono">choose a bounce</span>
+          <span class="player-queue-state mono">
+            <span data-player-era>undated</span>
+            <span aria-hidden="true"> · </span>
+            <span data-player-mode>queue</span>
+            <span aria-hidden="true"> · </span>
+            <span data-player-position>0 of 0</span>
+          </span>
+          <span id="player-reason" class="dig-reason mono" hidden></span>
+        </span>
+      </button>
+      <div id="owner-wave" class="wave" aria-label="Waveform"></div>
+      <div id="player-time" class="player-time">0:00 / 0:00</div>
+      <button class="player-tag-playing mono" type="button"
+        data-player-tag aria-label="Tag the song that is playing">tag playing</button>
+      <button class="player-stop-dig mono" type="button"
+        data-stop-dig hidden>stop digging</button>
+      <button class="player-expand mono" type="button" data-player-action="expand" aria-expanded="false" aria-controls="player-extras">queue ▸</button>
+      <div id="write-feedback" class="write-feedback" aria-live="polite"></div>
+    </div>
+    <div id="player-extras" class="player-extras" data-open="false" hidden>
+      <div class="player-modes mono" aria-label="Playback modes">
+        <button type="button" data-player-action="shuffle" aria-pressed="false">shuffle</button>
+        <button type="button" data-player-action="reshuffle">reshuffle</button>
+        <button type="button" data-player-action="repeat" aria-pressed="false">repeat off</button>
+      </div>
+      <div id="player-tags" class="player-tags"></div>
+      <details class="queue-view">
+        <summary><span>queue</span><span data-queue-count>0 queued</span></summary>
+        <ol class="queue-list" data-queue-view aria-label="Playback queue"></ol>
+      </details>
+    </div>
+  </aside>
+  <div id="global-indicator" class="request-indicator" role="status" aria-label="Loading"></div>
+</body>
+</html>

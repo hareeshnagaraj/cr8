@@ -1,0 +1,9 @@
+{% if undo_id %}
+  <div id="write-feedback" hx-swap-oob="innerHTML">
+    <span class="toast" data-undo-toast>
+      {{ undo_message }} — <button type="button" class="toast-undo mono"
+        hx-post="/undo" hx-target="#write-feedback"
+        hx-swap="innerHTML">undo</button>
+    </span>
+  </div>
+{% endif %}

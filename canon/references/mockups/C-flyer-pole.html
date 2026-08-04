@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cr8 — Archetype C · Flyer · Pole</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ============ C — FLYER · pole-committed ============ */
+:root{
+  --page:#050505;
+  --bg:#0a0a0a;
+  --ink:#fff;
+  --ink2:#999;
+  --ink3:#666;
+  --rule:rgba(255,255,255,.12);
+  --acid:oklch(0.93 0.19 115);
+  --era-pelicana:oklch(0.72 0.15 25);
+  --era-nova:oklch(0.78 0.13 195);
+  --era-working:oklch(0.86 0.16 115);
+  --unheard:oklch(0.60 0.22 27);
+  --ease:cubic-bezier(.22,0,0,1);
+}
+*{margin:0;padding:0;box-sizing:border-box;font-synthesis:none;}
+html,body{background:var(--page);}
+body{
+  font-family:"Space Grotesk",sans-serif;font-weight:400;color:var(--ink);
+  font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased;
+}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;
+  font-variant-numeric:tabular-nums;
+  transition:background-color .16s var(--ease),color .16s var(--ease),border-color .16s var(--ease),opacity .16s var(--ease);}
+@media (prefers-reduced-motion: reduce){*{transition:none !important;animation:none !important;}}
+
+.stage{display:flex;gap:44px;padding:44px;width:max-content;margin:0 auto;align-items:flex-start;}
+.slot-label{color:#666;font-size:11px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px;}
+.frame{width:390px;height:844px;overflow:hidden;outline:1px solid #232323;background:var(--bg);
+  display:flex;flex-direction:column;position:relative;}
+
+.display{font-family:"Archivo Black",sans-serif;font-weight:400;text-transform:uppercase;letter-spacing:-.01em;}
+.micro{font-size:9px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);}
+
+/* chips — flyer caps */
+.chip{min-width:44px;min-height:44px;padding:0 8px;border:1px solid rgba(255,255,255,.24);
+  color:var(--ink2);font-size:9.5px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;
+  display:inline-flex;align-items:center;justify-content:center;}
+.chip[aria-pressed="true"]{background:var(--acid);border-color:var(--acid);color:#0a0a0a;}
+.chip-sm{min-height:36px;min-width:0;padding:0 11px;font-size:10px;}
+.icobtn{border:1px solid rgba(255,255,255,.24);display:inline-flex;align-items:center;justify-content:center;}
+.icobtn[aria-pressed="true"]{background:var(--acid);border-color:var(--acid);color:#0a0a0a;}
+.icobtn svg{display:block;}
+
+/* covers */
+.cover{position:relative;overflow:hidden;color:#0a0a0a;}
+.cover .ct{font-family:"Archivo Black",sans-serif;text-transform:uppercase;letter-spacing:-.01em;
+  word-break:break-all;line-height:.98;display:block;}
+.era-nova{background:var(--era-nova);}
+.era-working{background:var(--era-working);}
+.era-pelicana{background:var(--era-pelicana);}
+
+.dot{width:7px;height:7px;background:var(--unheard);display:inline-block;flex:none;}
+.tick{width:3px;align-self:stretch;flex:none;}
+.tick.t-working{background:var(--era-working);}
+.tick.t-nova{background:var(--era-nova);}
+.tick.t-pelicana{background:var(--era-pelicana);}
+
+/* ticket-punch stamps */
+.stamp{font-family:"Archivo Black",sans-serif;font-size:8px;letter-spacing:.08em;text-transform:uppercase;
+  padding:3px 7px 2px;border:1.5px dashed currentColor;transform:rotate(-5deg);display:inline-block;flex:none;}
+.stamp.hearted{color:var(--acid);}
+.stamp.heard{color:#5c5c5c;}
+.stamp.skipped{color:#4a4a4a;transform:rotate(4deg);}
+.stamp.onnow{background:var(--acid);color:#0a0a0a;border:1.5px solid var(--acid);transform:rotate(-3deg);}
+
+/* ---------- screen 1: library as archive table ---------- */
+.banner{display:flex;align-items:center;justify-content:space-between;background:var(--acid);color:#0a0a0a;
+  padding:0 16px;height:44px;flex:none;}
+.banner .bl{font-family:"Archivo Black",sans-serif;font-size:17px;text-transform:uppercase;letter-spacing:-.01em;}
+.banner .br{font-size:11px;font-weight:500;display:flex;align-items:center;gap:7px;}
+.banner .dot{outline:1px solid rgba(10,10,10,.4);}
+
+.mast{padding:12px 16px 12px;border-bottom:1px solid var(--rule);}
+.mast-toprow{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}
+.mast-body{display:flex;gap:12px;align-items:center;}
+.cover-48{width:48px;height:48px;flex:none;padding:4px;}
+.cover-48 .ct{font-size:7px;}
+.mast-meta{flex:1;min-width:0;}
+.mast-title{font-size:22px;line-height:1;color:var(--acid);white-space:nowrap;}
+.mast-sub{font-size:11px;color:var(--ink2);margin-top:5px;}
+.progress{height:3px;background:rgba(255,255,255,.15);margin-top:8px;}
+.progress i{display:block;height:100%;background:var(--acid);width:40.5%;}
+.times{display:flex;justify-content:space-between;font-size:10px;color:var(--ink3);margin-top:4px;}
+.playbtn{width:48px;height:48px;flex:none;}
+
+.filters{display:flex;gap:6px;padding:10px 16px;border-bottom:1px solid var(--rule);}
+
+.thead{display:flex;align-items:center;gap:8px;padding:7px 16px 6px 11px;border-bottom:1px solid var(--rule);}
+.thead span{font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);}
+.col-title{flex:1;}
+.col-key{width:36px;text-align:right;}
+.col-v{width:18px;text-align:right;}
+.col-len{width:40px;text-align:right;}
+.col-when{width:44px;text-align:right;}
+
+.lib{flex:1;overflow:hidden;}
+.trow{display:flex;align-items:center;gap:8px;height:34px;padding-right:16px;border-bottom:1px solid rgba(255,255,255,.06);}
+.trow .tmain{flex:1;min-width:0;display:flex;align-items:center;gap:7px;padding-left:8px;}
+.ttitle{font-family:"Archivo Black",sans-serif;font-size:11.5px;text-transform:uppercase;letter-spacing:0;
+  color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tcell{font-size:10.5px;color:var(--ink2);text-align:right;white-space:nowrap;flex:none;}
+.ttag{font-size:7px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);
+  border:1px solid rgba(255,255,255,.18);padding:1px 3px;flex:none;}
+/* acid row highlight on fresh */
+.trow.fresh{background:var(--acid);border-bottom-color:rgba(10,10,10,.25);}
+.trow.fresh .ttitle{color:#0a0a0a;}
+.trow.fresh .tcell{color:rgba(10,10,10,.72);}
+.trow.fresh .ttag{color:rgba(10,10,10,.72);border-color:rgba(10,10,10,.4);}
+.trow.fresh .tick{background:#0a0a0a;}
+.nowmark{flex:none;}
+
+.tagzone{border-top:1px solid var(--rule);padding:10px 12px 14px;}
+.tagzone-top{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.heart48{width:48px;height:48px;flex:none;}
+.chiprow{display:flex;gap:4px;}
+.chiprow .chip{flex:1 1 auto;padding:0 4px;}
+.hearticon{width:16px;height:16px;}
+
+/* ---------- screen 2: song detail as flyer ---------- */
+.detcover{height:212px;padding:12px 16px 16px;display:flex;flex-direction:column;justify-content:flex-end;flex:none;}
+.detcover .backbtn{position:absolute;top:2px;left:2px;min-width:44px;min-height:44px;
+  display:inline-flex;align-items:center;justify-content:center;color:#0a0a0a;
+  font-size:12px;font-weight:500;letter-spacing:.04em;}
+.detcover .erastamp{position:absolute;top:18px;right:14px;font-family:"Archivo Black",sans-serif;
+  font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:#0a0a0a;
+  border:1.5px dashed #0a0a0a;padding:4px 8px 3px;transform:rotate(5deg);}
+.detcover .ct{font-size:34px;}
+.detcover .cd{font-size:11px;font-weight:500;color:rgba(10,10,10,.72);margin-top:7px;}
+.specs{display:flex;border-bottom:1px solid var(--rule);}
+.spec{flex:1;padding:10px 0 11px;text-align:center;border-left:1px solid var(--rule);}
+.spec:first-child{border-left:none;}
+.spec .sl{display:block;font-size:8px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);margin-bottom:3px;}
+.spec .sv{font-family:"Archivo Black",sans-serif;font-size:15px;color:var(--ink);text-transform:uppercase;}
+.waveblock{padding:12px 16px 4px;}
+.wave{width:100%;height:60px;display:block;}
+.wave .wp rect{fill:var(--acid);}
+.wave .wr rect{fill:rgba(255,255,255,.2);}
+.wavetimes{display:flex;justify-content:space-between;font-size:10px;color:var(--ink3);margin-top:5px;}
+.secthead{padding:10px 16px 5px;display:flex;justify-content:space-between;align-items:baseline;}
+.vlist{padding:0 16px;}
+.vrow{display:flex;align-items:center;gap:12px;height:30px;border-bottom:1px solid rgba(255,255,255,.06);}
+.vnum{font-family:"Archivo Black",sans-serif;font-size:15px;color:#3a3a3a;width:18px;text-align:right;}
+.vlabel{font-family:"Archivo Black",sans-serif;font-size:11px;letter-spacing:.03em;text-transform:uppercase;color:var(--ink2);flex:1;}
+.vrow.now .vnum,.vrow.now .vlabel{color:var(--acid);}
+.detchips{padding:8px 12px 0;}
+.attribrow{display:flex;align-items:center;gap:12px;padding:10px 16px 0;}
+.attribrow .aw{font-size:10.5px;color:var(--ink2);}
+.activity{padding:0 16px;}
+.actline{display:flex;justify-content:space-between;font-size:11px;color:var(--ink2);padding:6px 0;
+  border-bottom:1px solid rgba(255,255,255,.06);}
+.actline .aw{color:var(--ink3);}
+.actline b{font-weight:500;color:var(--ink);}
+
+/* ---------- screen 3: the gig poster ---------- */
+.poster{flex:1;display:flex;flex-direction:column;}
+.poster-head{padding:26px 20px 0;}
+.presents{color:var(--ink3);margin-bottom:14px;}
+.hero{font-size:clamp(48px,14vw,72px);line-height:.9;color:var(--acid);}
+.hero2{font-size:48px;line-height:.98;color:var(--ink);margin-top:4px;}
+.poster-strip{display:flex;justify-content:space-between;align-items:center;margin:16px 20px 0;
+  border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:8px 0;}
+.poster-strip span{font-size:11px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:var(--ink2);}
+.setlist{padding:4px 0 0;}
+.srow{display:flex;align-items:center;gap:11px;height:52px;padding:0 20px;border-bottom:1px solid rgba(255,255,255,.06);}
+.srow .tick{height:16px;align-self:center;}
+.snum{font-family:"Archivo Black",sans-serif;font-size:13px;color:#3a3a3a;width:24px;}
+.stitle{font-family:"Archivo Black",sans-serif;font-size:16px;text-transform:uppercase;letter-spacing:0;
+  color:var(--ink);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.srow.dim .stitle{color:#5c5c5c;}
+.srow.live .stitle{color:var(--acid);}
+/* thumb-zone player */
+.gplayer{margin-top:auto;border-top:1px solid var(--rule);padding:10px 12px 14px;}
+.gplayer-top{display:flex;justify-content:space-between;align-items:baseline;padding:0 4px 8px;}
+.gcontrols{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.bigplay{width:68px;height:68px;flex:none;background:var(--acid);border:none;color:#0a0a0a;}
+.heart52{width:52px;height:52px;flex:none;}
+.heart52 .hearticon{width:20px;height:20px;}
+.skipbtn{min-height:44px;flex:1;border:1px solid rgba(255,255,255,.24);color:var(--ink2);
+  font-size:10px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;}
+</style>
+
+<style>
+/* anti-slop craft pass: cover-title clipping + fitted display titles */
+.cover, .dt-cover, .g-cover, [class*="-cover"] { overflow: hidden; }
+.cover *, .dt-cover *, .g-cover * { overflow: hidden; text-overflow: clip; word-break: normal; overflow-wrap: normal; hyphens: none; white-space: nowrap; }
+.detcover h1, .detcover .title, .g-cover .title { white-space: normal; overflow-wrap: normal; word-break: keep-all; font-size: clamp(18px, 8.5cqw, 44px); }
+</style>
+</head>
+<body>
+
+<div class="stage">
+
+<!-- ================= SCREEN 1 — OWNER LIBRARY ================= -->
+<div class="slot">
+  <div class="slot-label">Screen 1 — Owner library · archive table</div>
+  <div class="frame">
+
+    <!-- named ritual as a UI object, full flyer -->
+    <div class="banner">
+      <span class="bl">Fresh batch</span>
+      <span class="br"><span class="dot" aria-hidden="true"></span>2 unheard · Jul 29</span>
+    </div>
+
+    <!-- player as masthead, acid at display scale -->
+    <header class="mast">
+      <div class="mast-toprow">
+        <span class="micro">On now</span>
+        <span class="micro">cr8 · Hareesh</span>
+      </div>
+      <div class="mast-body">
+        <div class="cover cover-48 era-nova"><span class="ct">Kissmenomakeup</span></div>
+        <div class="mast-meta">
+          <div class="display mast-title">Kissmenomakeup</div>
+          <div class="mast-sub">v7 · Dec 13 · C&#9839; minor · 12A · 1:04 / 2:38</div>
+          <div class="progress"><i></i></div>
+        </div>
+        <button class="icobtn playbtn" aria-label="Pause">
+          <svg width="14" height="16" viewBox="0 0 14 16"><rect x="1" y="1" width="4" height="14" fill="currentColor"/><rect x="9" y="1" width="4" height="14" fill="currentColor"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="filters">
+      <button class="chip chip-sm" aria-pressed="true">All</button>
+      <button class="chip chip-sm" aria-pressed="false">Fresh</button>
+      <button class="chip chip-sm" aria-pressed="false">Pelicana</button>
+      <button class="chip chip-sm" aria-pressed="false">Nova1</button>
+      <button class="chip chip-sm" aria-pressed="false">Working</button>
+    </div>
+
+    <!-- archive table -->
+    <div class="thead">
+      <span style="width:3px"></span>
+      <span class="col-title">Title</span>
+      <span class="col-key">Key</span>
+      <span class="col-v">V</span>
+      <span class="col-len">Len</span>
+      <span class="col-when">When</span>
+    </div>
+    <div class="lib">
+      <div class="trow"><span class="tick t-working"></span>
+        <div class="tmain"><span class="ttitle">Seeyouinthesummer</span></div>
+        <span class="tcell col-key">12A</span><span class="tcell col-v">4</span><span class="tcell col-len">3:49</span><span class="tcell col-when">1w</span>
+      </div>
+      <div class="trow fresh"><span class="tick"></span>
+        <div class="tmain"><span class="dot" aria-label="unheard"></span><span class="ttitle">Stayhere</span></div>
+        <span class="tcell col-key">5A</span><span class="tcell col-v">2</span><span class="tcell col-len">3:04</span><span class="tcell col-when">today</span>
+      </div>
+      <div class="trow fresh"><span class="tick"></span>
+        <div class="tmain"><span class="dot" aria-label="unheard"></span><span class="ttitle">Skylinedrive</span><span class="ttag">sketch</span></div>
+        <span class="tcell col-key">12B</span><span class="tcell col-v">1</span><span class="tcell col-len">1:14</span><span class="tcell col-when">3w</span>
+      </div>
+      <div class="trow"><span class="tick t-working"></span>
+        <div class="tmain"><span class="ttitle">Idontwannaneedu</span></div>
+        <span class="tcell col-key">2B</span><span class="tcell col-v">3</span><span class="tcell col-len">3:20</span><span class="tcell col-when">6mo</span>
+      </div>
+      <div class="trow"><span class="tick t-working"></span>
+        <div class="tmain"><span class="ttitle">Pensive Arpey</span></div>
+        <span class="tcell col-key">6A</span><span class="tcell col-v">4</span><span class="tcell col-len">3:12</span><span class="tcell col-when">6mo</span>
+      </div>
+      <div class="trow"><span class="tick t-nova"></span>
+        <div class="tmain">
+          <svg class="nowmark" width="8" height="10" viewBox="0 0 8 10" aria-label="playing"><path d="M0 0 L8 5 L0 10 Z" fill="oklch(0.93 0.19 115)"/></svg>
+          <span class="ttitle">Kissmenomakeup</span>
+        </div>
+        <span class="tcell col-key">12A</span><span class="tcell col-v">7</span><span class="tcell col-len">2:38</span><span class="tcell col-when">7mo</span>
+      </div>
+      <div class="trow"><span class="tick t-nova"></span>
+        <div class="tmain"><span class="ttitle">Dalepapi</span></div>
+        <span class="tcell col-key">9A</span><span class="tcell col-v">6</span><span class="tcell col-len">2:29</span><span class="tcell col-when">7mo</span>
+      </div>
+      <div class="trow"><span class="tick t-nova"></span>
+        <div class="tmain"><span class="ttitle">Justablur</span></div>
+        <span class="tcell col-key">—</span><span class="tcell col-v">7</span><span class="tcell col-len">3:25</span><span class="tcell col-when">8mo</span>
+      </div>
+      <div class="trow"><span class="tick t-nova"></span>
+        <div class="tmain"><span class="ttitle">Diamond</span></div>
+        <span class="tcell col-key">10A</span><span class="tcell col-v">5</span><span class="tcell col-len">3:40</span><span class="tcell col-when">8mo</span>
+      </div>
+      <div class="trow"><span class="tick t-nova"></span>
+        <div class="tmain"><span class="ttitle">Ibring</span><span class="ttag">sketch</span></div>
+        <span class="tcell col-key">11A</span><span class="tcell col-v">6</span><span class="tcell col-len">1:12</span><span class="tcell col-when">8mo</span>
+      </div>
+      <div class="trow"><span class="tick t-nova"></span>
+        <div class="tmain"><span class="ttitle">Righthere</span></div>
+        <span class="tcell col-key">5A</span><span class="tcell col-v">4</span><span class="tcell col-len">3:39</span><span class="tcell col-when">9mo</span>
+      </div>
+      <div class="trow"><span class="tick t-pelicana"></span>
+        <div class="tmain"><span class="ttitle">Northsky</span></div>
+        <span class="tcell col-key">10A</span><span class="tcell col-v">5</span><span class="tcell col-len">3:22</span><span class="tcell col-when">2y</span>
+      </div>
+      <div class="trow"><span class="tick t-pelicana"></span>
+        <div class="tmain"><span class="ttitle">Drownme</span></div>
+        <span class="tcell col-key">10A</span><span class="tcell col-v">1</span><span class="tcell col-len">2:57</span><span class="tcell col-when">2y</span>
+      </div>
+      <div class="trow"><span class="tick t-pelicana"></span>
+        <div class="tmain"><span class="ttitle">Jine</span></div>
+        <span class="tcell col-key">4A</span><span class="tcell col-v">2</span><span class="tcell col-len">5:35</span><span class="tcell col-when">2y</span>
+      </div>
+    </div>
+
+    <!-- tag surface, thumb zone -->
+    <div class="tagzone">
+      <div class="tagzone-top">
+        <button class="icobtn heart48" aria-pressed="false" aria-label="Heart Kissmenomakeup">
+          <svg class="hearticon" viewBox="0 0 16 16"><path d="M8 13.8C4.1 10.9 1.5 8.4 1.5 5.7 1.5 3.6 3.1 2.2 4.9 2.2 6.1 2.2 7.2 2.8 8 3.9 8.8 2.8 9.9 2.2 11.1 2.2 12.9 2.2 14.5 3.6 14.5 5.7 14.5 8.4 11.9 10.9 8 13.8Z" fill="currentColor"/></svg>
+        </button>
+        <span class="micro">Tag · Kissmenomakeup</span>
+      </div>
+      <div class="chiprow">
+        <button class="chip" aria-pressed="true">dreamy</button>
+        <button class="chip" aria-pressed="false">heavy</button>
+        <button class="chip" aria-pressed="false">glittery</button>
+        <button class="chip" aria-pressed="false">late-night</button>
+        <button class="chip" aria-pressed="false">acoustic</button>
+        <button class="chip" aria-pressed="false">bouncy</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ================= SCREEN 2 — SONG DETAIL ================= -->
+<div class="slot">
+  <div class="slot-label">Screen 2 — Song detail · flyer</div>
+  <div class="frame">
+
+    <!-- poster cover -->
+    <div class="cover detcover era-nova">
+      <button class="backbtn">&#8592;&nbsp; cr8</button>
+      <span class="erastamp">Nova1 · 2024–25</span>
+      <span class="display ct">Kissmenomakeup</span>
+      <span class="cd">7 months ago · 7 versions</span>
+    </div>
+
+    <!-- spec sheet -->
+    <div class="specs">
+      <div class="spec"><span class="sl">Key</span><span class="sv">C&#9839; min</span></div>
+      <div class="spec"><span class="sl">Camelot</span><span class="sv">12A</span></div>
+      <div class="spec"><span class="sl">Length</span><span class="sv">2:38</span></div>
+      <div class="spec"><span class="sl">Versions</span><span class="sv">7</span></div>
+    </div>
+
+    <!-- waveform, played = acid -->
+    <div class="waveblock">
+      <svg class="wave" viewBox="0 0 431 96" preserveAspectRatio="none" aria-hidden="true">
+        <g class="wp"><rect x="0" y="43.5" width="3" height="8.9"/><rect x="4" y="38.9" width="3" height="18.3"/><rect x="8" y="41.2" width="3" height="13.6"/><rect x="12" y="37.4" width="3" height="21.3"/><rect x="16" y="37.0" width="3" height="22.0"/><rect x="20" y="35.1" width="3" height="25.8"/><rect x="24" y="32.4" width="3" height="31.3"/><rect x="28" y="35.0" width="3" height="26.1"/><rect x="32" y="32.5" width="3" height="31.0"/><rect x="36" y="29.4" width="3" height="37.2"/><rect x="40" y="23.8" width="3" height="48.5"/><rect x="44" y="23.9" width="3" height="48.2"/><rect x="48" y="29.9" width="3" height="36.1"/><rect x="52" y="19.0" width="3" height="58.0"/><rect x="56" y="19.8" width="3" height="56.4"/><rect x="60" y="24.9" width="3" height="46.3"/><rect x="64" y="19.0" width="3" height="58.0"/><rect x="68" y="25.4" width="3" height="45.1"/><rect x="72" y="23.1" width="3" height="49.8"/><rect x="76" y="27.3" width="3" height="41.4"/><rect x="80" y="22.3" width="3" height="51.4"/><rect x="84" y="25.0" width="3" height="46.0"/><rect x="88" y="24.1" width="3" height="47.9"/><rect x="92" y="27.1" width="3" height="41.8"/><rect x="96" y="30.6" width="3" height="34.8"/><rect x="100" y="27.9" width="3" height="40.2"/><rect x="104" y="25.4" width="3" height="45.1"/><rect x="108" y="31.0" width="3" height="34.0"/><rect x="112" y="28.6" width="3" height="38.8"/><rect x="116" y="24.9" width="3" height="46.2"/><rect x="120" y="17.0" width="3" height="62.0"/><rect x="124" y="19.9" width="3" height="56.3"/><rect x="128" y="25.2" width="3" height="45.6"/><rect x="132" y="22.9" width="3" height="50.2"/><rect x="136" y="25.5" width="3" height="45.0"/><rect x="140" y="20.4" width="3" height="55.2"/><rect x="144" y="14.9" width="3" height="66.2"/><rect x="148" y="16.0" width="3" height="64.0"/><rect x="152" y="22.4" width="3" height="51.1"/><rect x="156" y="18.6" width="3" height="58.9"/><rect x="160" y="21.1" width="3" height="53.8"/><rect x="164" y="16.8" width="3" height="62.5"/><rect x="168" y="23.4" width="3" height="49.1"/><rect x="172" y="26.8" width="3" height="42.5"/></g>
+        <g class="wr"><rect x="176" y="18.8" width="3" height="58.4"/><rect x="180" y="15.8" width="3" height="64.5"/><rect x="184" y="22.1" width="3" height="51.9"/><rect x="188" y="17.6" width="3" height="60.8"/><rect x="192" y="22.9" width="3" height="50.3"/><rect x="196" y="22.6" width="3" height="50.8"/><rect x="200" y="18.6" width="3" height="58.7"/><rect x="204" y="21.2" width="3" height="53.6"/><rect x="208" y="7.8" width="3" height="80.4"/><rect x="212" y="11.6" width="3" height="72.7"/><rect x="216" y="13.6" width="3" height="68.8"/><rect x="220" y="4.0" width="3" height="88.0"/><rect x="224" y="10.5" width="3" height="74.9"/><rect x="228" y="15.9" width="3" height="64.2"/><rect x="232" y="14.5" width="3" height="67.0"/><rect x="236" y="17.4" width="3" height="61.1"/><rect x="240" y="17.9" width="3" height="60.3"/><rect x="244" y="19.8" width="3" height="56.4"/><rect x="248" y="6.2" width="3" height="83.6"/><rect x="252" y="21.6" width="3" height="52.8"/><rect x="256" y="20.5" width="3" height="55.0"/><rect x="260" y="20.9" width="3" height="54.1"/><rect x="264" y="11.7" width="3" height="72.6"/><rect x="268" y="17.6" width="3" height="60.8"/><rect x="272" y="14.2" width="3" height="67.6"/><rect x="276" y="14.7" width="3" height="66.6"/><rect x="280" y="13.2" width="3" height="69.5"/><rect x="284" y="9.8" width="3" height="76.5"/><rect x="288" y="15.9" width="3" height="64.2"/><rect x="292" y="21.9" width="3" height="52.2"/><rect x="296" y="22.3" width="3" height="51.4"/><rect x="300" y="19.9" width="3" height="56.2"/><rect x="304" y="29.4" width="3" height="37.1"/><rect x="308" y="27.4" width="3" height="41.2"/><rect x="312" y="35.8" width="3" height="24.4"/><rect x="316" y="37.1" width="3" height="21.8"/><rect x="320" y="32.1" width="3" height="31.7"/><rect x="324" y="34.7" width="3" height="26.6"/><rect x="328" y="37.5" width="3" height="21.1"/><rect x="332" y="36.4" width="3" height="23.3"/><rect x="336" y="37.9" width="3" height="20.3"/><rect x="340" y="30.2" width="3" height="35.5"/><rect x="344" y="23.2" width="3" height="49.6"/><rect x="348" y="19.3" width="3" height="57.4"/><rect x="352" y="12.0" width="3" height="72.0"/><rect x="356" y="4.0" width="3" height="88.0"/><rect x="360" y="4.0" width="3" height="88.0"/><rect x="364" y="16.9" width="3" height="62.2"/><rect x="368" y="8.6" width="3" height="78.8"/><rect x="372" y="4.0" width="3" height="88.0"/><rect x="376" y="4.0" width="3" height="88.0"/><rect x="380" y="4.0" width="3" height="88.0"/><rect x="384" y="4.0" width="3" height="88.0"/><rect x="388" y="16.6" width="3" height="62.8"/><rect x="392" y="19.9" width="3" height="56.2"/><rect x="396" y="13.2" width="3" height="69.5"/><rect x="400" y="19.1" width="3" height="57.8"/><rect x="404" y="9.6" width="3" height="76.7"/><rect x="408" y="25.2" width="3" height="45.5"/><rect x="412" y="27.3" width="3" height="41.4"/><rect x="416" y="27.0" width="3" height="42.0"/><rect x="420" y="27.6" width="3" height="40.9"/><rect x="424" y="36.3" width="3" height="23.4"/><rect x="428" y="39.0" width="3" height="17.9"/></g>
+      </svg>
+      <div class="wavetimes"><span>1:04</span><span>2:38</span></div>
+    </div>
+
+    <!-- version chain as setlist -->
+    <div class="secthead"><span class="micro">Versions — the setlist</span><span class="micro">7</span></div>
+    <div class="vlist">
+      <div class="vrow"><span class="vnum">1</span><span class="vlabel">v1 · Dec 13</span></div>
+      <div class="vrow"><span class="vnum">2</span><span class="vlabel">v2 · Dec 14</span></div>
+      <div class="vrow"><span class="vnum">3</span><span class="vlabel">v3 · Dec 18</span></div>
+      <div class="vrow"><span class="vnum">4</span><span class="vlabel">v4 · Dec 21</span></div>
+      <div class="vrow"><span class="vnum">5</span><span class="vlabel">v5 · Dec 28</span></div>
+      <div class="vrow"><span class="vnum">6</span><span class="vlabel">v6 · Jan 2</span></div>
+      <div class="vrow now"><span class="vnum">7</span><span class="vlabel">v7 · Jan 3</span><span class="stamp onnow">On now</span></div>
+    </div>
+
+    <!-- chips + ticket-punch attribution -->
+    <div class="detchips chiprow">
+      <button class="chip" aria-pressed="true">dreamy</button>
+      <button class="chip" aria-pressed="false">heavy</button>
+      <button class="chip" aria-pressed="false">glittery</button>
+      <button class="chip" aria-pressed="false">late-night</button>
+      <button class="chip" aria-pressed="false">acoustic</button>
+      <button class="chip" aria-pressed="false">bouncy</button>
+    </div>
+    <div class="attribrow">
+      <span class="stamp hearted">Dreamy — EJ</span>
+      <span class="aw">2h ago</span>
+    </div>
+
+    <!-- activity from the pack -->
+    <div class="secthead"><span class="micro">Activity</span></div>
+    <div class="activity">
+      <div class="actline"><span><b>EJ</b> tagged dreamy</span><span class="aw">2h ago</span></div>
+      <div class="actline"><span><b>EJ</b> hearted Stayhere</span><span class="aw">2h ago</span></div>
+      <div class="actline"><span><b>henry</b> hearted Diamond</span><span class="aw">yesterday</span></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ================= SCREEN 3 — GUEST LISTEN-THROUGH · GIG POSTER ================= -->
+<div class="slot">
+  <div class="slot-label">Screen 3 — Guest listen-through · gig poster</div>
+  <div class="frame">
+    <div class="poster">
+
+      <div class="poster-head">
+        <div class="micro presents">Hareesh presents</div>
+        <div class="display hero">For EJ</div>
+        <div class="display hero2">New batch</div>
+      </div>
+
+      <div class="poster-strip">
+        <span>Jul 29</span>
+        <span>6 songs</span>
+        <span>~18 min</span>
+      </div>
+
+      <!-- setlist with verdicts as ticket punches -->
+      <div class="setlist">
+        <div class="srow dim"><span class="tick t-working"></span><span class="snum">01</span><span class="stitle">Seeyouinthesummer</span><span class="stamp heard">Heard</span></div>
+        <div class="srow live"><span class="tick t-working"></span><span class="snum">02</span><span class="stitle">Stayhere</span><span class="stamp hearted">Hearted</span><span class="stamp onnow">On now</span></div>
+        <div class="srow dim"><span class="tick t-working"></span><span class="snum">03</span><span class="stitle">Idontwannaneedu</span><span class="stamp heard">Heard</span></div>
+        <div class="srow dim"><span class="tick t-working"></span><span class="snum">04</span><span class="stitle">Pensive Arpey</span><span class="stamp skipped">Skipped</span></div>
+        <div class="srow dim"><span class="tick t-nova"></span><span class="snum">05</span><span class="stitle">Kissmenomakeup</span><span class="stamp hearted">Hearted</span></div>
+        <div class="srow dim"><span class="tick t-nova"></span><span class="snum">06</span><span class="stitle">Diamond</span></div>
+      </div>
+
+      <!-- thumb-zone player -->
+      <div class="gplayer">
+        <div class="gplayer-top">
+          <span class="micro">Track 2 of 6 · Stayhere</span>
+          <span class="micro">C minor · 5A · 3:04</span>
+        </div>
+        <div class="gcontrols">
+          <button class="bigplay" aria-label="Play Stayhere">
+            <svg width="22" height="26" viewBox="0 0 20 24"><path d="M1 1 L19 12 L1 23 Z" fill="currentColor"/></svg>
+          </button>
+          <button class="icobtn heart52" aria-pressed="true" aria-label="Heart Stayhere">
+            <svg class="hearticon" viewBox="0 0 16 16"><path d="M8 13.8C4.1 10.9 1.5 8.4 1.5 5.7 1.5 3.6 3.1 2.2 4.9 2.2 6.1 2.2 7.2 2.8 8 3.9 8.8 2.8 9.9 2.2 11.1 2.2 12.9 2.2 14.5 3.6 14.5 5.7 14.5 8.4 11.9 10.9 8 13.8Z" fill="currentColor"/></svg>
+          </button>
+          <button class="skipbtn">Skip &#8594;</button>
+        </div>
+        <div class="chiprow">
+          <button class="chip" aria-pressed="false">dreamy</button>
+          <button class="chip" aria-pressed="false">heavy</button>
+          <button class="chip" aria-pressed="false">glittery</button>
+          <button class="chip" aria-pressed="false">late-night</button>
+          <button class="chip" aria-pressed="false">acoustic</button>
+          <button class="chip" aria-pressed="false">bouncy</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+// chip / heart toggles only
+document.querySelectorAll('button[aria-pressed]').forEach(function(b){
+  b.addEventListener('click',function(){
+    b.setAttribute('aria-pressed', b.getAttribute('aria-pressed')==='true' ? 'false' : 'true');
+  });
+});
+</script>
+</body>
+</html>

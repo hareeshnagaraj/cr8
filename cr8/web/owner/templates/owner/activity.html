@@ -1,0 +1,23 @@
+{% extends "owner/base.html" %}
+{% block title %}Activity · cr8{% endblock %}
+{% block content %}
+  <div class="page-head"><div><div class="micro">activity</div><h1>What moved</h1><p>Fresh from the room.</p></div></div>
+  {% if alerts %}
+    <div class="section-label mono">open alerts</div>
+    <div class="alert-list">
+      {% for alert in alerts %}
+        <article class="alert-row">
+          <div>
+            <div>{{ alert.kind|replace("_", " ") }}</div>
+            <div class="meta">{{ alert.message }}{% if alert.share_label %} · {{ alert.share_label }}{% endif %}</div>
+          </div>
+          <form action="/alerts/{{ alert.id }}/ack" method="post" data-cr8-form hx-boost="false">
+            <button class="button" type="submit">Acknowledge</button>
+          </form>
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+  <div class="activity-stream" data-activity-stream></div>
+  <div id="activity-feed">{% include "owner/fragments/activity_feed.html" %}</div>
+{% endblock %}

@@ -1,0 +1,199 @@
+{% extends "owner/base.html" %}
+{% block title %}Library · cr8{% endblock %}
+{% block main_class %}main-library{% endblock %}
+{% block content %}
+  {% set preview = songs[0] if songs else none %}
+  <div class="library-workspace">
+    <aside class="filter-rail" aria-label="Library filters">
+      <details class="filter-sheet" open>
+        <summary>
+          <span>Filters</span>
+          <span class="mono">{{ total }} songs</span>
+        </summary>
+        {% include "owner/fragments/filter_rail.html" %}
+      </details>
+    </aside>
+
+    <section id="library-results" class="cr8-pane" aria-labelledby="library-title">
+      <header class="cr8-pane-head">
+        <div class="crate-title-row">
+          <div>
+            <div class="micro" data-dig-mode-status>the cr8 · owner library</div>
+            <h1 id="library-title" aria-live="polite">{{ total }} songs</h1>
+            <p class="sr-only">Move the cursor, hear the song, and tag what your ear tells you.</p>
+          </div>
+          {% if shuffle_label %}
+            <button class="dig-action" type="button"
+              data-dig-action="shuffle-this">{{ shuffle_label }}</button>
+          {% endif %}
+          <button class="dig-action stop-dig" type="button"
+            data-stop-dig hidden>Stop digging</button>
+        </div>
+        {% if active_filters %}
+          <div class="active-filter-strip" aria-label="Active filters">
+            {% for item in active_filters %}
+              <a class="active-filter-token mono" href="{{ item.url }}"
+                data-filter-link hx-get="{{ item.url }}"
+                hx-target="#library-results" hx-select="#library-results"
+                hx-swap="outerHTML" hx-push-url="true">
+                {{ item.label }} <span aria-hidden="true">×</span>
+              </a>
+            {% endfor %}
+            <a class="active-filter-clear mono" href="/" data-filter-link
+              hx-get="/" hx-target="#library-results"
+              hx-select="#library-results" hx-swap="outerHTML"
+              hx-push-url="true">clear all</a>
+          </div>
+        {% endif %}
+        <div hidden aria-hidden="true">
+          {% for kind, song in (("shuffle-all", shuffle_all_seed), ("shuffle-this", shuffle_this_seed), ("dig", dig_seed), ("dig-untagged", dig_untagged_seed)) %}
+            {% if song %}
+              <button type="button" data-{{ kind }}-seed data-track-id="{{ song.bounce_ulid }}" data-track-url="/api/tracks/{{ song.bounce_ulid }}" data-audio-url="/m/{{ song.bounce_ulid }}" data-track-title="{{ song.title }}" data-dig-reason="{{ song.reason or '' }}"></button>
+            {% endif %}
+          {% endfor %}
+        </div>
+        <form class="searchbar" action="/" method="get" role="search"
+          hx-get="/" hx-target="#library-results" hx-select="#library-results"
+          hx-swap="outerHTML" hx-push-url="true"
+          hx-trigger="input changed delay:150ms from:input[type='search'], search from:input[type='search']">
+          <input type="search" name="q" value="{{ query }}" maxlength="120" placeholder="Search title, stem, key…" aria-label="Search library">
+          {% for name in ("status","era","key","dim","value","sort","seed") %}
+            {% if selected[name] %}<input type="hidden" name="{{ name }}" value="{{ selected[name] }}">{% endif %}
+          {% endfor %}
+          {% for name in ("vibe","instr","collab","use","untagged_dim") %}
+            {% for item in selected[name] %}<input type="hidden" name="{{ name }}" value="{{ item }}">{% endfor %}
+          {% endfor %}
+          {% if selected.unheard %}<input type="hidden" name="unheard" value="true">{% endif %}
+          {% if selected.hearted %}<input type="hidden" name="hearted" value="true">{% endif %}
+          {% if selected.untagged %}<input type="hidden" name="untagged" value="true">{% endif %}
+          {% if selected.skip_sketches %}<input type="hidden" name="skip_sketches" value="true">{% endif %}
+          <button class="button search-submit" type="submit">Search</button>
+        </form>
+        <div class="search-feedback" aria-live="polite">
+          {% if error %}<p class="error">{{ error }}</p>{% endif %}
+        </div>
+        {% if total %}
+          <form class="save-results" action="/collections" method="post" data-cr8-form hx-boost="false">
+            <input type="hidden" name="source" value="filter">
+            {% for name in ("q","status","era","key","dim","value","sort","seed") %}
+              {% if selected[name] %}<input type="hidden" name="{{ name }}" value="{{ selected[name] }}">{% endif %}
+            {% endfor %}
+            {% for name in ("vibe","instr","collab","use","untagged_dim") %}
+              {% for item in selected[name] %}<input type="hidden" name="{{ name }}" value="{{ item }}">{% endfor %}
+            {% endfor %}
+            {% if selected.unheard %}<input type="hidden" name="unheard" value="true">{% endif %}
+            {% if selected.hearted %}<input type="hidden" name="hearted" value="true">{% endif %}
+            {% if selected.untagged %}<input type="hidden" name="untagged" value="true">{% endif %}
+            {% if selected.skip_sketches %}<input type="hidden" name="skip_sketches" value="true">{% endif %}
+            <input type="text" name="name" maxlength="80" required placeholder="Name these {{ total }} results">
+            <button class="button" type="submit">Save as collection</button>
+          </form>
+        {% endif %}
+      </header>
+
+      <form class="library-form" action="/selection" method="post" data-cr8-form
+        hx-post="/selection" hx-swap="none">
+        <div class="library-scroll">
+          <div class="library" role="table" aria-label="Songs">
+            {% include "owner/fragments/library_rows.html" %}
+          </div>
+        </div>
+        <div class="batchbar">
+          <span class="batch-empty mono">Select songs to tag or download</span>
+          <div class="batch-actions" data-batch-actions hidden>
+            <span class="selected-count mono" data-selected-count>0 selected</span>
+            <button class="button batch-download" type="button"
+              data-download-selection
+              data-max-count="{{ selection_max_count }}"
+              data-max-bytes="{{ selection_max_bytes }}">Download selected</button>
+            <span class="batch-download-note mono" data-download-note
+              aria-live="polite" hidden></span>
+            <select name="status" aria-label="Bulk status">
+              <option value="">status —</option>
+              {% for item in vocab.status %}<option value="{{ item }}">{{ item }}</option>{% endfor %}
+            </select>
+            <select name="tag_dim" aria-label="Multi-song tag dimension">
+              <option value="">tag —</option>
+              <option value="vibe">vibe</option>
+              <option value="instr">instrument</option>
+              <option value="collab">collaborator</option>
+              <option value="use">use</option>
+            </select>
+            <input class="batch-tag-value" name="tag_value" type="text" maxlength="40" placeholder="tag value">
+            <button class="button batch-apply" type="submit">Add</button>
+            <button class="button batch-remove" type="submit" name="tag_action" value="remove">Remove</button>
+            <details class="batch-more">
+              <summary class="mono">more</summary>
+              <div class="batch-extras">
+                <div class="batch-extra-row">
+                  <label class="micro" for="batch-collection-name">collection</label>
+                  <input id="batch-collection-name" name="collection_name" type="text" maxlength="80" placeholder="collection name">
+                  <button class="button" type="submit" name="action" value="collection">Make collection</button>
+                </div>
+                <div class="batch-extra-row">
+                  <label class="micro" for="batch-release-url">release</label>
+                  <input id="batch-release-url" class="released-url" name="released_url" type="url" maxlength="500" placeholder="release URL (optional)">
+                  <button class="button" type="submit" name="action" value="released">Mark released</button>
+                </div>
+                <div class="batch-extra-row batch-extra-action">
+                  <span class="micro">processing</span>
+                  <button class="button" type="submit" name="action" value="stems">Queue stems</button>
+                </div>
+              </div>
+            </details>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <aside class="detail-panel" aria-label="Selected song detail">
+      {% if preview_detail %}
+        {% set song = preview_detail.song %}
+        {% set versions = preview_detail.versions %}
+        {% set panel = preview_detail.panel %}
+        {% set latest = preview_detail.latest %}
+        {% set source_stems = preview_detail.source_stems %}
+        {% set separated_stems = preview_detail.separated_stems %}
+        {% set stem_job = preview_detail.stem_job %}
+        {% set has_default_stems = preview_detail.has_default_stems %}
+        {% set has_hq_stems = preview_detail.has_hq_stems %}
+        {% set stems_stale = preview_detail.stems_stale %}
+        {% set song_ulid = song.public_id %}
+        {% include "owner/fragments/detail_panel.html" %}
+      {% else %}
+        <div class="detail-empty">
+          <div class="micro">selected / now playing</div>
+          <h2>No songs on this shelf</h2>
+          <p class="quiet">Clear a filter to return to the crate.</p>
+        </div>
+      {% endif %}
+    </aside>
+  </div>
+  <template id="row-tail-template">
+    <div class="row-tail">
+      <button class="row-tail-action row-play-toggle" type="button"
+        data-row-play data-player-toggle="true">
+        <span class="icon-swap">
+          <svg class="icon-play" viewBox="0 0 20 22" aria-hidden="true"><path d="M0 0l20 11L0 22z"/></svg>
+          <svg class="icon-pause" viewBox="0 0 12 14" aria-hidden="true">
+            <rect x="1" width="3.4" height="14" rx="1"/><rect x="7.6" width="3.4" height="14" rx="1"/>
+          </svg>
+        </span>
+      </button>
+      <button class="heart row-heart" type="button" aria-pressed="false" data-optimistic>♡</button>
+      <button class="row-tail-action" type="button" data-row-tag>#</button>
+      <button class="row-tail-action" type="button" data-row-queue-add>+</button>
+      <a class="row-tail-action row-download" download>↓</a>
+      <details class="row-overflow">
+        <summary aria-label="More actions">•••</summary>
+        <div class="row-overflow-menu">
+          <button type="button" data-row-play-next>play next</button>
+          <button type="button" data-row-copy-link>copy link</button>
+          <a href="/collections">add to collection</a>
+          <button type="button" data-row-rip-stems>rip stems</button>
+        </div>
+      </details>
+      <a class="row-detail mono" hx-boost="true"><span aria-hidden="true">›</span></a>
+    </div>
+  </template>
+{% endblock %}

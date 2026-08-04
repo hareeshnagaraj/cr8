@@ -1,0 +1,43 @@
+{% extends "owner/base.html" %}
+{% block title %}{{ collection.name }} · cr8{% endblock %}
+{% block content %}
+  <div class="page-head">
+    <div>
+      <a class="meta" href="/collections">‹ collections</a>
+      <div class="micro" data-collection-count>ordered collection · {{ collection.track_count }} songs</div>
+      <h1>{{ collection.name }}</h1>
+      {% if collection.notes %}<p>{{ collection.notes }}</p>{% endif %}
+    </div>
+    <div class="dig-actions">
+      {% if tracks %}
+        <button class="dig-action dig-primary" type="button"
+          data-collection-play data-shuffle="false">play</button>
+        <button class="dig-action" type="button"
+          data-collection-play data-shuffle="true">shuffle</button>
+      {% endif %}
+    </div>
+  </div>
+  <ol class="collection-order" data-collection-list
+    data-order-url="/collections/{{ collection.ulid }}/order">
+    {% for track in tracks %}
+      <li class="collection-track" data-bounce-ulid="{{ track.bounce_ulid }}">
+        <span class="queue-grip" aria-hidden="true">⠿</span>
+        <button type="button" class="collection-play-row"
+          data-track-id="{{ track.bounce_ulid }}"
+          data-track-url="/api/tracks/{{ track.bounce_ulid }}"
+          data-audio-url="/m/{{ track.bounce_ulid }}"
+          data-track-title="{{ track.title }}">
+          <strong>{{ track.title }}</strong>
+          <span class="meta">{{ track.version_label }} · {{ track.duration_label }}</span>
+        </button>
+        <form action="/collections/{{ collection.ulid }}/remove/{{ track.bounce_ulid }}"
+          method="post" data-cr8-form
+          hx-post="/collections/{{ collection.ulid }}/remove/{{ track.bounce_ulid }}"
+          hx-target="closest li" hx-swap="delete">
+          <button class="collection-remove" type="submit"
+            aria-label="Remove {{ track.title }} from collection">×</button>
+        </form>
+      </li>
+    {% endfor %}
+  </ol>
+{% endblock %}

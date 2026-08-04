@@ -1,0 +1,8 @@
+{
+  "name": "cr8",
+  "short_name": "cr8",
+  "start_url": "/",
+  "display": "browser",
+  "background_color": "#191919",
+  "theme_color": "#191919"
+}

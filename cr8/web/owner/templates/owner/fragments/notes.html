@@ -1,0 +1,20 @@
+<section id="notes-{{ bounce_ulid }}" class="notes-panel" aria-label="Member notes">
+  <div class="section-label mono">notes</div>
+  <form class="note-form" hx-post="/reactions/{{ bounce_ulid }}/note"
+    hx-target="#notes-{{ bounce_ulid }}" hx-select="unset"
+    hx-swap="outerHTML">
+    <input name="note" type="text" maxlength="280" required
+      placeholder="Leave a note" aria-label="Note">
+    <button class="button" type="submit">Save note</button>
+  </form>
+  <div class="note-list">
+    {% for note in notes %}
+      <article class="note-row">
+        <span>{{ note.value }}</span>
+        <small>{{ note.actor|actor_display }}{% if note.timecode_s %} · {{ note.timecode_s|duration }}{% endif %}</small>
+      </article>
+    {% else %}
+      <p class="quiet">No notes yet.</p>
+    {% endfor %}
+  </div>
+</section>

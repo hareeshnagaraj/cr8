@@ -1,0 +1,29 @@
+{% extends "owner/base.html" %}
+{% block title %}Collections · cr8{% endblock %}
+{% block content %}
+  <div class="page-head">
+    <div>
+      <div class="micro">hand-built shelves</div>
+      <h1>Collections</h1>
+      <p>Ordered sets you can play, shuffle, and export.</p>
+    </div>
+  </div>
+  <section class="queue-collection-maker" data-library-count="{{ library_count }}">
+    <div>
+      <div class="micro">from the player queue</div>
+      <input type="text" maxlength="80" placeholder="Collection name" data-queue-collection-name>
+    </div>
+    <button class="button" type="button" data-collection-from-queue>Create from queue</button>
+  </section>
+  <div class="collection-grid">
+    {% for collection in collections %}
+      <a class="collection-card" href="/collections/{{ collection.ulid }}">
+        <span class="micro">{{ collection.track_count }} songs</span>
+        <strong>{{ collection.name }}</strong>
+        {% if collection.notes %}<span class="meta">{{ collection.notes }}</span>{% endif %}
+      </a>
+    {% else %}
+      <p class="quiet">No collections yet. Select songs in the library, save a filter, or build one from the queue.</p>
+    {% endfor %}
+  </div>
+{% endblock %}

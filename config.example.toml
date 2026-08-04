@@ -1,0 +1,32 @@
+# Copy to config.toml and set your own paths.
+# Or run: cr8 init
+[corpus]
+root = "/path/to/your/music/folder"
+# Archives are static one-time-ingested roots; the laptop pushes them once while
+# the sync watch stays on the main root.
+# archive_roots = ["/path/to/2021-New-Projects", "/path/to/2022-New-Projects"]
+
+# Curated scope is an EXPLICIT include list. Top-level loose audio files are curated.
+# These directories (relative to root) are curated, recursively:
+curated_dirs = []
+# Directories matching this glob (and this literal oddball) are the project layer:
+project_glob = "* Project"
+project_extra = []
+# Known non-audio/reference dirs → layer "other":
+other_dirs = []
+
+[vocab]
+status = ["idea", "jam", "demo", "mixed", "finished", "released"]
+mixrole = ["main", "vox", "novox", "inst", "bass", "gtar", "stems", "acap"]
+# vibe / instr / collab start open; import-csv validates against the values already present
+# plus new ones only when --allow-new is passed.
+known_collabs = []
+
+[audio]
+extensions = [".wav", ".mp3", ".m4a", ".aif", ".aiff", ".flac"]
+
+[automation]
+# CR8_HEALTHCHECK_URL and CR8_MONTHLY_HEALTHCHECK_URL override these.
+healthcheck_url = ""
+monthly_healthcheck_url = ""
+owner_url = "http://127.0.0.1:8080/healthz"

@@ -1,0 +1,12 @@
+{% if latest and latest.downloads %}
+  <section class="detail-downloads" aria-labelledby="downloads-heading">
+    <div class="section-label mono" id="downloads-heading">download bounce</div>
+    <div class="download-options">
+      {% for option in latest.downloads %}
+        <a class="button download-option"
+          href="/download/{{ latest.bounce_ulid }}?format={{ option.format }}"
+          download>{{ option.label }}</a>
+      {% endfor %}
+    </div>
+  </section>
+{% endif %}

@@ -1,0 +1,26 @@
+{
+  "_comment": "The performance invariant, in numbers. scripts/gate.sh enforces every figure and refuses the deploy on any breach. Baselines recorded 2026-08-02; raise a budget only as a deliberate reviewed decision, never to make a red gate green.",
+  "interaction": {
+    "keystroke_repaint_p75_ms": 32.0,
+    "keystroke_repaint_max_ms": 50.0,
+    "blocking_per_keystroke_ms": 0.0,
+    "dropped_frames_p75": 2.0,
+    "dropped_frames_max": 5.0,
+    "layout_shift": 0.05
+  },
+  "play_latency": {
+    "_comment": "Press play to the dock clock leaving 0:00 — real decoded audio, quantized +~1000ms by the clock display. Baselines 2026-08-02: 1378 ms unthrottled (~350 real), 5537 ms through the 5 Mbit pacing proxy. The throttled figure is a RELATIVE regression index, not a fidelity claim — per-connection TCP pacing is harsher than a real 5 Mbit link (where play starts in ~1 s). Both budgets trip on regression from today's truth. Known follow-up: the audio element fetches the whole file eagerly (preload=auto); tuning that is an investigation, not a budget adjustment.",
+    "unthrottled_ms": 1600,
+    "throttled_5mbit_ms": 6000
+  },
+  "payload": {
+    "_comment": "Decoded JS bytes the library page actually loads, measured in-browser by the gate — cache-independent and immune to Next's manifest reshuffles. Baseline 640 KB on 2026-08-02 after splitting the video-extract stack into a lazy chunk; the budget is tight on purpose — raising it is a reviewed decision, and heavy features belong behind dynamic imports.",
+    "library_page_js_kb": 768
+  },
+  "live_smoke": {
+    "_comment": "Against cr8.li after deploy, from the LAN. Generous because Cloudflare is in the path; these catch a broken origin, not micro-regressions.",
+    "login_ttfb_ms": 1200,
+    "library_ttfb_ms": 1500,
+    "media_first_64kb_ms": 2000
+  }
+}

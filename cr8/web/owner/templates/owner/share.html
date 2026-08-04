@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>{% if track %}{{ track.title }}{% else %}Share unavailable{% endif %}</title>
+  {% if track and og_url %}
+  <meta property="og:type" content="music.song">
+  <meta property="og:site_name" content="cr8">
+  <meta property="og:title" content="{{ track.title }}">
+  <meta property="og:description" content="{{ og_description }}">
+  <meta property="og:url" content="{{ og_url }}">
+  <meta property="og:image" content="{{ og_image }}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="1200">
+  <meta property="og:image:alt" content="Cover art for {{ track.title }}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ track.title }}">
+  <meta name="twitter:description" content="{{ og_description }}">
+  <meta name="twitter:image" content="{{ og_image }}">
+  {% endif %}
+  <style>
+    :root {
+      color-scheme: dark;
+      --ground: #0d0d0f;
+      --raise: #151517;
+      --card: rgba(26, 26, 29, .88);
+      --line: rgba(255, 255, 255, .08);
+      --line-strong: rgba(255, 255, 255, .16);
+      --t1: rgba(255, 255, 255, .95);
+      --t2: rgba(255, 255, 255, .62);
+      --t3: rgba(255, 255, 255, .38);
+      --r-s: 6px;
+      --r-m: 12px;
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --nums: ui-monospace, "SF Mono", Menlo, monospace;
+    }
+    * { box-sizing: border-box; }
+    html { min-width: 320px; background: var(--ground); }
+    body {
+      min-height: 100vh; margin: 0; color: var(--t1); background: var(--ground);
+      font: 14px/1.5 var(--sans); font-synthesis: none;
+      -webkit-font-smoothing: antialiased;
+    }
+    body::before {
+      content: ""; position: fixed; z-index: 0; inset: 0; pointer-events: none;
+      background:
+        radial-gradient(circle at 50% -8%, var(--era, #444) 0, transparent 57%),
+        linear-gradient(180deg, rgba(255, 255, 255, .025), transparent 38%);
+      opacity: .25;
+    }
+    main {
+      position: relative; z-index: 1; width: min(100%, 580px); min-height: 100vh;
+      margin: 0 auto; padding: 18px 16px 34px;
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .art {
+      position: relative; width: 100%; aspect-ratio: 1; overflow: hidden;
+      border-radius: var(--r-m); background: var(--era, var(--raise));
+      box-shadow: 0 28px 90px rgba(0, 0, 0, .42), inset 0 0 0 1px var(--line-strong);
+    }
+    .art::after {
+      content: ""; position: absolute; inset: 0; pointer-events: none;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .11);
+      border-radius: inherit;
+    }
+    .art img { display: block; width: 100%; height: 100%; object-fit: cover; }
+    .identity { padding: 24px 2px 0; }
+    .sent {
+      margin: 0 0 9px; color: var(--t3); font: 10px/1.2 var(--nums);
+      letter-spacing: .1em; text-transform: uppercase;
+    }
+    h1 {
+      margin: 0; font-size: clamp(2.35rem, 11vw, 4.8rem); line-height: .94;
+      letter-spacing: -.055em; font-weight: 680; overflow-wrap: anywhere;
+      text-wrap: balance;
+    }
+    .duration { margin: 12px 0 0; color: var(--t2); font: 12px/1 var(--nums); }
+    .player {
+      margin-top: 24px; padding: 12px; display: grid;
+      grid-template-columns: 52px minmax(0, 1fr); align-items: center; gap: 12px;
+      background: var(--card); border: 1px solid var(--line-strong);
+      border-radius: var(--r-m); box-shadow: 0 18px 58px rgba(0, 0, 0, .32);
+      backdrop-filter: blur(18px);
+    }
+    .play {
+      width: 52px; height: 52px; padding: 0; display: grid; place-items: center;
+      border: 0; border-radius: 50%; background: var(--t1); color: var(--ground);
+      cursor: pointer;
+    }
+    .play:hover { background: #fff; }
+    .play:active { transform: scale(.97); }
+    .play-glyph {
+      width: 0; height: 0; margin-left: 3px;
+      border-top: 7px solid transparent; border-bottom: 7px solid transparent;
+      border-left: 11px solid currentColor;
+    }
+    .pause-glyph { display: none; width: 12px; height: 15px; border-inline: 4px solid currentColor; }
+    .play.is-playing .play-glyph { display: none; }
+    .play.is-playing .pause-glyph { display: block; }
+    .timeline { min-width: 0; }
+    .time {
+      display: flex; justify-content: space-between; gap: 12px; margin-bottom: 4px;
+      color: var(--t3); font: 10px/1 var(--nums);
+    }
+    .seek {
+      display: block; width: 100%; height: 44px; margin: 0; padding: 0;
+      appearance: none; background: transparent; cursor: pointer;
+    }
+    .seek::-webkit-slider-runnable-track {
+      height: 4px; border-radius: 999px;
+      background: linear-gradient(to right, var(--t1) 0 var(--progress, 0%), var(--line-strong) var(--progress, 0%) 100%);
+    }
+    .seek::-webkit-slider-thumb {
+      width: 14px; height: 14px; margin-top: -5px; appearance: none;
+      border: 0; border-radius: 50%; background: var(--t1);
+    }
+    .seek::-moz-range-track { height: 4px; border-radius: 999px; background: var(--line-strong); }
+    .seek::-moz-range-progress { height: 4px; border-radius: 999px; background: var(--t1); }
+    .seek::-moz-range-thumb { width: 14px; height: 14px; border: 0; border-radius: 50%; background: var(--t1); }
+    audio { display: none; }
+    .denied { width: min(100%, 520px); padding-block: 32px; }
+    .denied h1 { font-size: clamp(2rem, 9vw, 4rem); }
+    .denied p { margin: 14px 0 0; color: var(--t2); font-size: 15px; }
+    :focus-visible { outline: 2px solid rgba(255, 255, 255, .72); outline-offset: 3px; }
+    @media (min-width: 580px) {
+      main { padding: 38px 28px 54px; }
+      .identity { padding-top: 30px; }
+      .player { margin-top: 30px; padding: 14px; }
+    }
+    @media (prefers-reduced-motion: reduce) { .play:active { transform: none; } }
+  </style>
+</head>
+{% if track %}
+<body style="--era: {{ track.era_color or '#444448' }}">
+  <main>
+    <div class="art">
+      <img src="/s/{{ raw_token }}/art" alt="Cover art for {{ track.title }}">
+    </div>
+    <div class="identity">
+      <p class="sent">{{ owner_display }} sent you this</p>
+      <h1>{{ track.title }}</h1>
+      <p class="duration">{{ track.duration_label }}</p>
+    </div>
+    <div class="player">
+      <button class="play" type="button" aria-label="Play">
+        <span class="play-glyph" aria-hidden="true"></span>
+        <span class="pause-glyph" aria-hidden="true"></span>
+      </button>
+      <div class="timeline">
+        <div class="time" aria-hidden="true">
+          <span class="elapsed">0:00</span>
+          <span>{{ track.duration_label }}</span>
+        </div>
+        <input class="seek" type="range" min="0" max="1000" value="0" aria-label="Seek through {{ track.title }}">
+      </div>
+      <audio preload="metadata" src="/s/{{ raw_token }}/audio"></audio>
+    </div>
+  </main>
+  <script>
+    (() => {
+      const audio = document.querySelector("audio");
+      const button = document.querySelector(".play");
+      const seek = document.querySelector(".seek");
+      const elapsed = document.querySelector(".elapsed");
+      const clock = (seconds) => {
+        const whole = Math.max(0, Math.floor(Number.isFinite(seconds) ? seconds : 0));
+        return `${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, "0")}`;
+      };
+      const paint = () => {
+        const fraction = audio.duration ? audio.currentTime / audio.duration : 0;
+        seek.value = String(Math.round(fraction * 1000));
+        seek.style.setProperty("--progress", `${fraction * 100}%`);
+        elapsed.textContent = clock(audio.currentTime);
+      };
+      button.addEventListener("click", () => {
+        if (audio.paused) audio.play().catch(() => undefined);
+        else audio.pause();
+      });
+      seek.addEventListener("input", () => {
+        if (audio.duration) audio.currentTime = audio.duration * Number(seek.value) / 1000;
+        paint();
+      });
+      audio.addEventListener("play", () => {
+        button.classList.add("is-playing");
+        button.setAttribute("aria-label", "Pause");
+      });
+      audio.addEventListener("pause", () => {
+        button.classList.remove("is-playing");
+        button.setAttribute("aria-label", "Play");
+      });
+      audio.addEventListener("timeupdate", paint);
+      audio.addEventListener("loadedmetadata", paint);
+      audio.addEventListener("ended", paint);
+    })();
+  </script>
+</body>
+{% else %}
+<body>
+  <main>
+    <div class="denied">
+      <h1>Share unavailable</h1>
+      <p>{{ message }}</p>
+    </div>
+  </main>
+</body>
+{% endif %}
+</html>

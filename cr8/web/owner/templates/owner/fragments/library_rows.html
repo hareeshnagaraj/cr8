@@ -1,0 +1,48 @@
+{% for song in songs %}
+  {% set cursor = loop.first and not offset and not oob %}
+  <article class="song-stack thread-{{ song.era_css }}{% if cursor %} is-cursor is-panel-subject{% endif %}"
+    id="song-stack-{{ song.song_ulid }}"
+    role="rowgroup"
+    {% if oob %}hx-swap-oob="outerHTML:#song-stack-{{ song.song_ulid }}"{% endif %}>
+    <div class="song-line" role="row">
+      <label class="row-select-hit">
+        <input class="select-song" type="checkbox" name="song_ulid" value="{{ song.song_ulid }}"
+          data-bounce-ulid="{{ song.bounce_ulid }}"
+          data-original-size="{{ song.download_original_size }}"
+          tabindex="-1" aria-label="Select {{ song.title }}">
+      </label>
+      <button class="song-row play-row" type="button"
+        data-track-id="{{ song.bounce_ulid }}"
+        data-audio-url="/m/{{ song.bounce_ulid }}"
+        data-track-title="{{ song.title }}"
+        tabindex="{{ 0 if cursor else -1 }}"
+        aria-selected="{{ 'true' if cursor else 'false' }}"
+        aria-label="Inspect {{ song.title }}">
+        <span class="cover era-{{ song.era_css }}" aria-hidden="true">
+          {{ song.title }}
+          <span class="row-play-cue">
+            <svg viewBox="0 0 20 22"><path d="M0 0l20 11L0 22z"/></svg>
+          </span>
+        </span>
+        <span class="row-main">
+          <span class="row-title" title="{{ song.title }}">{{ song.title }}</span>
+          <span class="row-meta">
+            <span>{{ song.key_canon or "—" }}</span>
+            <span>{{ song.key_camelot or "—" }}</span>
+            <span>{{ song.duration_label }}</span>
+            <span>{{ song.date_label }}</span>
+            {% if song.unheard %}<span class="unheard">unheard</span>{% endif %}
+          </span>
+        </span>
+      </button>
+    </div>
+  </article>
+{% else %}
+  {% if not offset %}<p class="quiet">Nothing matches this shelf.</p>{% endif %}
+{% endfor %}
+{% if next_url %}
+  <div class="library-more" hx-get="{{ next_url }}" hx-trigger="revealed"
+    hx-target="this" hx-select="unset" hx-swap="outerHTML">
+    <span class="micro">pulling the next row</span>
+  </div>
+{% endif %}

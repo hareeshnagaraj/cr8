@@ -1,0 +1,37 @@
+{% extends "owner/base.html" %}
+{% block title %}Tags · cr8{% endblock %}
+{% block main_class %}main-tags{% endblock %}
+{% block content %}
+  <div class="page-head tags-head">
+    <div>
+      <div class="micro">vocabulary desk</div>
+      <h1>Tags</h1>
+      <p>Rename, merge, or remove the shared vocabulary. Counts are songs, not clicks.</p>
+    </div>
+  </div>
+  <div class="vocabulary-table" role="table" aria-label="Tag vocabulary">
+    <div class="vocabulary-table-head" role="row">
+      <span role="columnheader">Dimension</span>
+      <span role="columnheader">Tag</span>
+      <span role="columnheader">Source</span>
+      <span role="columnheader">Rename or merge</span>
+    </div>
+    {% for tag in tags %}
+      <div class="vocabulary-row" role="row">
+        <span class="vocabulary-dimension mono" role="cell">{{ tag.dim }} · {{ tag.song_count }}</span>
+        <strong role="cell">{{ tag.value }}</strong>
+        <span class="meta" role="cell">{{ tag.sources }}</span>
+        <form action="/tags/rewrite" method="post" data-cr8-form hx-boost="false">
+          <input type="hidden" name="dim" value="{{ tag.dim }}">
+          <input type="hidden" name="value" value="{{ tag.value }}">
+          <input class="tag-rename-input" type="text" name="replacement" maxlength="40"
+            placeholder="new or existing value" aria-label="Replacement for {{ tag.value }}">
+          <button class="button" type="submit" name="action" value="rename">Rename</button>
+          <button class="button danger" type="submit" name="action" value="delete">Delete</button>
+        </form>
+      </div>
+    {% else %}
+      <p class="quiet">No subjective vocabulary yet.</p>
+    {% endfor %}
+  </div>
+{% endblock %}

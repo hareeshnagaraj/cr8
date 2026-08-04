@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  The nightly pass: full scan, verify, fingerprint and detect, mirror build,
+  database snapshot with an integrity check, restic backup, digest.
+
+  This is the job that makes the catalogue durable, so the two ways it can
+  quietly not happen are both spelled out here rather than left to be
+  rediscovered:
+
+  PATH, because a LaunchAgent gets no login shell. Without it ffmpeg, ffprobe,
+  audiowaveform, fpcalc and restic are all absent, and the stages that need
+  them skip - the run still reports success, having backed nothing up.
+
+  CR8_BACKUP_REPO, because the default repository is under ~/Music and macOS
+  refuses a LaunchAgent write access there. The job dies with EX_CONFIG before
+  the program starts, which produces no log and no failure, only an absence.
+
+  Install:
+    sed -e "s|__HOME__|$HOME|g" -e "s|__APP__|$PWD|g" -e "s|__BACKUP__|$HOME/cr8/backup|g" \
+      ops/launchd/com.cr8.nightly.plist > ~/Library/LaunchAgents/com.cr8.nightly.plist
+    launchctl load ~/Library/LaunchAgents/com.cr8.nightly.plist
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.cr8.nightly</string>
+  <key>WorkingDirectory</key><string>__APP__</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>__APP__/.venv/bin/python3</string>
+    <string>-m</string><string>cr8.cli</string>
+    <string>--config</string><string>__APP__/config.toml</string>
+    <string>--db</string><string>__APP__/catalog.db</string>
+    <string>nightly</string>
+  </array>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key><string>/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+    <key>CR8_BACKUP_REPO</key><string>__BACKUP__</string>
+  </dict>
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Hour</key><integer>3</integer>
+    <key>Minute</key><integer>30</integer>
+  </dict>
+  <key>RunAtLoad</key><false/>
+  <key>Nice</key><integer>5</integer>
+  <key>LowPriorityIO</key><true/>
+  <key>ProcessType</key><string>Background</string>
+  <key>StandardOutPath</key><string>__HOME__/Library/Logs/cr8-nightly.log</string>
+  <key>StandardErrorPath</key><string>__HOME__/Library/Logs/cr8-nightly.log</string>
+</dict>
+</plist>

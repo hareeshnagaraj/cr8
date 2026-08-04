@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.cr8.owner</string>
+  <key>UserName</key>
+  <string>crateowner</string>
+  <key>GroupName</key>
+  <string>cr8</string>
+  <key>WorkingDirectory</key>
+  <string>__APP__</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>__APP__/.venv/bin/uvicorn</string>
+    <string>cr8.web.owner.app:create_app</string>
+    <string>--factory</string>
+    <string>--host</string>
+    <string>127.0.0.1</string>
+    <string>--port</string>
+    <string>8080</string>
+    <string>--no-server-header</string>
+  </array>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>CR8_BASE_DIR</key>
+    <string>__APP__</string>
+    <key>CR8_DB_PATH</key>
+    <string>__APP__/catalog.db</string>
+    <key>CR8_MIRROR_ROOT</key>
+    <string>__APP__/mirror</string>
+    <key>CR8_SECRET_FILE</key>
+    <string>__APP__/secrets/owner-session.key</string>
+    <key>CR8_COOKIE_SECURE</key>
+    <string>true</string>
+  </dict>
+  <key>Umask</key>
+  <integer>7</integer>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+  <key>ThrottleInterval</key>
+  <integer>5</integer>
+  <key>StandardOutPath</key>
+  <string>__APP__/logs/owner.log</string>
+  <key>StandardErrorPath</key>
+  <string>__APP__/logs/owner-error.log</string>
+</dict>
+</plist>

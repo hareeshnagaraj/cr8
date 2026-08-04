@@ -1,0 +1,20 @@
+<div class="micro">{{ today_count }} today</div>
+{% if undo %}
+  <span id="today-count" hx-swap-oob="innerHTML">{{ today_count }}</span>
+  <div class="toast">Committed. <button hx-post="/reactions/{{ undo }}/undo" hx-target="closest .toast" hx-select="unset" hx-swap="outerHTML">undo</button></div>
+{% endif %}
+{% if track %}
+  <article class="triage-card">
+    <div class="micro">{{ track.version_label }} · {{ track.date_label }}</div>
+    <h2>{{ track.title }}</h2>
+    <div class="meta">{{ track.key_canon or "—" }} · {{ track.key_camelot or "—" }} · {{ track.duration_label }}</div>
+    <button class="button" type="button" data-track-url="/api/tracks/{{ track.bounce_ulid }}">Play bounce</button>
+    <div class="verdict-row">
+      {% for value in ("gem","keep","archive") %}
+        <button class="verdict" hx-post="/triage/{{ track.bounce_ulid }}" hx-vals='{"value":"{{ value }}"}' hx-target="#triage-card" hx-select="unset" hx-swap="innerHTML">{{ value }}</button>
+      {% endfor %}
+    </div>
+  </article>
+{% else %}
+  <p class="quiet">Queue clear for now.</p>
+{% endif %}

@@ -1,0 +1,52 @@
+mirror/
+stems/
+*.db
+*.db-wal
+*.db-shm
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+build/
+dist/
+reports/*
+!reports/first-scan.md
+.ingest.lock
+.gstack/
+logs/
+vendor-cache/
+secrets/
+bin/
+!reports/stem-separation-research.md
+!reports/stems-first-run.md
+!reports/released-candidates.md
+models/uvr/
+catalog-backup-snapshot.db
+config.toml
+docs/goals/
+web/node_modules/
+web/.next/
+web/tsconfig.tsbuildinfo
+
+# Upload inbox: real audio dropped by members, ingested by the pipeline.
+# The directory is created on demand; its contents are never source.
+drops/
+
+# Upload inbox: member audio awaiting ingest, never source.
+drops/
+reports/perf-samples.jsonl
+
+# a worktree's node_modules symlink is not a directory and dodges the dir pattern
+web/node_modules
+
+# agent skill installs (local tooling)
+.agents/
+.claude/
+skills-lock.json
+
+# owner screenshots / local ops secrets
+.actual-*.png
+.reference-*.png
+ops/env
+bin/keyfinder-cli

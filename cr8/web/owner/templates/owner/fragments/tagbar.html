@@ -1,0 +1,10 @@
+<span class="micro">tag · {{ track.title }}</span>
+{% set pressed = active.heart %}
+{% include "owner/fragments/heart.html" %}
+<div class="chips">
+  {% for value in chips %}
+    {% set pressed = value in active.chips %}
+    {% include "owner/fragments/chip.html" %}
+  {% endfor %}
+</div>
+<button class="button" type="button" hx-get="/more/{{ track.bounce_ulid }}" hx-target="#more-sheet" hx-select="unset" hx-swap="innerHTML">more</button>

@@ -1,0 +1,19 @@
+<div id="write-feedback" hx-swap-oob="innerHTML">
+  <span class="toast" {% if undo_id %}data-undo-toast{% endif %}>
+    {{ message }}
+    {% if undo_id %}
+      — <button type="button" class="toast-undo mono"
+        hx-post="/undo" hx-target="#write-feedback"
+        hx-swap="innerHTML">undo</button>
+    {% endif %}
+  </span>
+</div>
+{% if songs %}
+  {% set oob = true %}
+  {% set offset = 0 %}
+  {% set next_url = none %}
+  {% include "owner/fragments/library_rows.html" %}
+{% endif %}
+{% for song_ulid in removed_song_ulids %}
+  <div id="song-stack-{{ song_ulid }}" hx-swap-oob="delete"></div>
+{% endfor %}

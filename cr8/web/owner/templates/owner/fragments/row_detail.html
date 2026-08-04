@@ -1,0 +1,44 @@
+<section class="row-detail-expand thread-{{ song.era_css }}" aria-label="{{ song.title }} details">
+  <header class="row-detail-expand-head">
+    <div>
+      <div class="micro">selected song</div>
+      <h2>{{ song.title }}</h2>
+      <div class="meta">{{ song.era }} · {{ song.first_date|display_date_range(song.last_date) }}</div>
+    </div>
+    <button class="row-detail-close mono" type="button" data-row-detail-close aria-label="Close {{ song.title }} details">close</button>
+  </header>
+  {% set latest = song.latest %}
+  <section class="spec-grid row-detail-spec" aria-label="{{ song.title }} metadata">
+    <div class="spec-cell"><div class="spec-k">key</div><div class="spec-v">{{ song.key_canon or "—" }}</div></div>
+    <div class="spec-cell"><div class="spec-k">camelot</div><div class="spec-v">{{ song.key_camelot or "—" }}</div></div>
+    <div class="spec-cell"><div class="spec-k">bpm</div><div class="spec-v">{{ song.bpm|round|int if song.bpm is not none else "—" }}</div></div>
+    <div class="spec-cell"><div class="spec-k">length</div><div class="spec-v">{{ latest.duration_label if latest else "—" }}</div></div>
+    <div class="spec-cell"><div class="spec-k">added</div><div class="spec-v">{{ song.first_date|display_date }}</div></div>
+    <div class="spec-cell"><div class="spec-k">versions</div><div class="spec-v">{{ song.version_count }}</div></div>
+  </section>
+  <div class="section-label mono">version rail · {{ versions|length }}</div>
+  <section class="rail row-detail-rail" aria-label="{{ song.title }} version chain">
+    {% for version in versions %}
+      <button class="version" type="button"
+        data-track-id="{{ version.bounce_ulid }}"
+        data-track-url="/api/tracks/{{ version.bounce_ulid }}"
+        data-audio-url="/m/{{ version.bounce_ulid }}"
+        data-track-title="{{ song.title }}"
+        {% if loop.first %}aria-current="true"{% endif %}>
+        <span class="version-dot"></span>
+        <span class="version-label">{{ version.version_label }} · {{ version.date_label }}</span>
+        <span class="version-flag">{{ "current" if loop.first else version.mixrole or "bounce" }}</span>
+      </button>
+    {% endfor %}
+  </section>
+  <div class="section-label mono">tag panel</div>
+  <div class="row-detail-tagbar">
+    {% if tag_panel %}
+      {% set panel = tag_panel %}
+      {% include "owner/fragments/tag_panel.html" %}
+    {% endif %}
+  </div>
+  <a class="detail-action" href="/songs/{{ song.public_id }}">
+    <span>open stems + catalog detail</span><span aria-hidden="true">›</span>
+  </a>
+</section>

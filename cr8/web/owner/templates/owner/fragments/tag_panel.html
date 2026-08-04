@@ -1,0 +1,63 @@
+{% macro tag_chip(song_ulid, dimension, item) -%}
+  <form hx-post="/songs/{{ song_ulid }}/tags/toggle"
+    hx-target="#tag-panel-{{ song_ulid }}"
+    hx-select="unset"
+    hx-swap="outerHTML">
+    <input type="hidden" name="dim" value="{{ dimension }}">
+    <button class="chip tag-toggle provenance-{{ item.source or 'unset' }}"
+      type="submit" name="value" value="{{ item.value }}"
+      aria-pressed="{{ 'true' if item.active else 'false' }}"
+      data-tag-toggle data-optimistic>
+      <span>{{ item.value }}</span>
+    </button>
+  </form>
+{%- endmacro %}
+
+<section id="tag-panel-{{ panel.song.public_id }}" class="inline-tag-panel"
+  data-song-tag-panel data-song-ulid="{{ panel.song.public_id }}"
+  aria-label="Editable tags for {{ panel.song.title }}">
+  {% for dimension in panel.dimensions %}
+    <div class="tag-editor" data-tag-dimension="{{ dimension.name }}">
+      <div class="tag-editor-head">
+        <span class="micro">{{ dimension.name }}</span>
+        {% if dimension.name in ("vibe","use","status","keeper") %}
+          <span class="tag-judgment mono">your ear</span>
+        {% endif %}
+      </div>
+      <div class="chips chips-wrap{% if dimension.name == 'keeper' %} keeper-chips{% endif %}">
+        {% for item in dimension["values"] %}
+          {{ tag_chip(panel.song.public_id, dimension.name, item) }}
+        {% endfor %}
+      </div>
+      {% if dimension.name in ("status", "key", "keeper") %}
+        {% for item in dimension["values"] %}
+          {% if item.active %}
+            <div class="tag-provenance mono">
+              {{ item.value }} · {% if item.source == "human" %}set by you{% else %}set from source{% endif %}
+            </div>
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+      {% if dimension.allow_new %}
+        <form class="tag-add-form tag-add-inline"
+          hx-post="/songs/{{ panel.song.public_id }}/tags/toggle"
+          hx-target="#tag-panel-{{ panel.song.public_id }}"
+          hx-select="unset"
+          hx-swap="outerHTML">
+          <input type="hidden" name="dim" value="{{ dimension.name }}">
+          <input type="text" name="value" maxlength="40"
+            list="tag-options-{{ panel.song.public_id }}-{{ dimension.name }}"
+            placeholder="+ {{ dimension.name }}" aria-label="Add {{ dimension.name }} tag"
+            data-tag-input>
+          <datalist id="tag-options-{{ panel.song.public_id }}-{{ dimension.name }}">
+            {% for option in panel.vocab_options.get(dimension.name, []) %}
+              <option value="{{ option.value }}" label="{{ option.count }} songs">
+            {% endfor %}
+          </datalist>
+          <button class="button" type="submit">add</button>
+        </form>
+      {% endif %}
+    </div>
+  {% endfor %}
+</section>
+{% include "owner/fragments/undo_toast.html" %}

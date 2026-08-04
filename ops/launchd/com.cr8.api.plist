@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  The Python app, kept alive across reboots.
+
+  Loopback only: the web app in front of it is the public face, and nothing
+  else should reach this directly. Logs go to ~/Library/Logs rather than the
+  repo, because macOS refuses LaunchAgents write access inside ~/Music and the
+  job dies with EX_CONFIG before the program runs.
+
+  Install:
+    sed -e "s|__HOME__|$HOME|g" -e "s|__APP__|$PWD|g" ops/launchd/com.cr8.api.plist \
+      > ~/Library/LaunchAgents/com.cr8.api.plist
+    launchctl load ~/Library/LaunchAgents/com.cr8.api.plist
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.cr8.api</string>
+  <key>WorkingDirectory</key><string>__APP__</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>__APP__/.venv/bin/uvicorn</string>
+    <string>cr8.web.owner.app:create_app</string>
+    <string>--factory</string>
+    <string>--host</string><string>127.0.0.1</string>
+    <string>--port</string><string>8080</string>
+    <string>--loop</string>
+    <string>uvloop</string>
+    <string>--http</string>
+    <string>httptools</string>
+    <string>--workers</string>
+    <string>4</string>
+    <string>--no-server-header</string>
+  </array>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>CR8_BASE_DIR</key><string>__APP__</string>
+    <key>CR8_DB_PATH</key><string>__APP__/catalog.db</string>
+    <key>CR8_MIRROR_ROOT</key><string>__APP__/mirror</string>
+    <key>CR8_SECRET_FILE</key><string>__APP__/secrets/owner-session.key</string>
+    <key>CR8_COOKIE_SECURE</key><string>1</string>
+    <key>CR8_PUBLIC_BASE_URL</key><string>https://cr8.li</string>
+  </dict>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>ThrottleInterval</key><integer>10</integer>
+  <key>StandardOutPath</key><string>__HOME__/Library/Logs/cr8-api.log</string>
+  <key>StandardErrorPath</key><string>__HOME__/Library/Logs/cr8-api.log</string>
+</dict>
+</plist>

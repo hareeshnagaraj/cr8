@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#191919">
+  <title>{% block title %}cr8{% endblock %}</title>
+  <link rel="stylesheet" href="/static/owner.css?v={{ asset_v }}">
+  <script defer src="/static/owner.js?v={{ asset_v }}"></script>
+</head>
+<body>
+  <main class="auth-shell">{% block auth %}{% endblock %}</main>
+</body>
+</html>

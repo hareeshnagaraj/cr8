@@ -1,0 +1,8 @@
+<div class="activity-list">
+  {% for item in activity %}
+    <article class="activity-row">
+      <div class="activity-copy"><div>{{ item.actor|actor_display }} · {{ item.kind }}{% if item.value %} {{ item.value }}{% endif %}</div><div class="meta">{{ item.title or item.bounce_ulid }}</div></div>
+      <span class="meta">{{ item.created_at }}</span>
+    </article>
+  {% else %}<p class="quiet">No reactions yet.</p>{% endfor %}
+</div>

@@ -1,0 +1,56 @@
+<div id="detail-panel" class="detail-scroll"
+  data-song-ulid="{{ song.public_id }}" data-preserve-scroll="detail">
+  <div class="detail-preview-head">
+    <div class="cover cover-detail era-{{ song.era_css }}" data-detail-cover>{{ song.title }}</div>
+    <div class="detail-preview-copy">
+      <div class="micro">selected song</div>
+      <h2 data-detail-title>{{ song.title }}</h2>
+      <div class="meta" data-detail-era>{{ song.era }} · {{ song.first_date|display_date_range(song.last_date) }}</div>
+    </div>
+    <button class="panel-pin mono" type="button" data-panel-pin
+      aria-pressed="false" aria-label="Keep this song in the detail panel">pin</button>
+  </div>
+
+  <div class="section-label mono">versions · {{ versions|length }}</div>
+  <section class="rail detail-version-rail" aria-label="{{ song.title }} version chain"
+    data-preserve-scroll="version-rail">
+    {% for version in versions %}
+      <button class="version" type="button"
+        data-track-id="{{ version.bounce_ulid }}"
+        data-track-url="/api/tracks/{{ version.bounce_ulid }}"
+        data-audio-url="/m/{{ version.bounce_ulid }}"
+        data-track-title="{{ song.title }}"
+        {% if loop.first %}aria-current="true"{% endif %}>
+        <span class="version-dot"></span>
+        <span class="version-label">{{ version.version_label }} · {{ version.date_label }}</span>
+        <span class="version-flag">{{ "playing" if loop.first else version.mixrole or "bounce" }}</span>
+      </button>
+    {% endfor %}
+  </section>
+
+  <section class="spec-grid detail-spec-grid" aria-label="{{ song.title }} metadata">
+    <div class="spec-cell"><div class="spec-k">key</div><div class="spec-v" data-detail-key>{{ song.key_canon or "—" }}</div></div>
+    <div class="spec-cell"><div class="spec-k">camelot</div><div class="spec-v" data-detail-camelot>{{ song.key_camelot or "—" }}</div></div>
+    <div class="spec-cell"><div class="spec-k">bpm</div><div class="spec-v" data-detail-bpm>{{ song.bpm|round|int if song.bpm is not none else "—" }}</div></div>
+    <div class="spec-cell"><div class="spec-k">length</div><div class="spec-v" data-detail-length>{{ latest.duration_label if latest else "—" }}</div></div>
+    <div class="spec-cell"><div class="spec-k">added</div><div class="spec-v" data-detail-added>{{ song.first_date|display_date }}</div></div>
+    <div class="spec-cell"><div class="spec-k">versions</div><div class="spec-v" data-detail-versions>{{ song.version_count }}</div></div>
+  </section>
+  {% include "owner/fragments/downloads.html" %}
+
+  <section class="detail-tags" aria-labelledby="detail-tags-title">
+    <div class="section-label mono" id="detail-tags-title">tag editor</div>
+    <div id="detail-tagbar" class="detail-tagbar">
+      {% if panel %}
+        {% include "owner/fragments/tag_panel.html" %}
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="detail-stems">
+    {% include "owner/fragments/stems.html" %}
+  </section>
+  <a class="detail-action" href="/songs/{{ song.public_id }}">
+    <span>open full catalog detail</span><span aria-hidden="true">›</span>
+  </a>
+</div>

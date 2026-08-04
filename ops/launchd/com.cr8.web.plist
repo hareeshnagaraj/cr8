@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  The Next app: the public face, on 3100, in front of the Python app.
+
+  Runs next directly rather than through npm, so launchd supervises the server
+  itself instead of a shell that spawns it and exits - otherwise KeepAlive
+  restarts the wrapper forever while the port stays held or empty. Note this
+  is next/dist/bin/next, the actual JavaScript: node_modules/.bin/next is a
+  shell wrapper, and handing that to node is a syntax error.
+
+  Logs go to ~/Library/Logs, not the repo: macOS refuses LaunchAgents write
+  access inside ~/Music and the job dies with EX_CONFIG before node runs.
+
+  This serves the built output, so `npm run build` (or scripts/web-restart.sh)
+  still has to run after a code change.
+
+  Install:
+    sed -e "s|__HOME__|$HOME|g" -e "s|__APP__|$PWD|g" ops/launchd/com.cr8.web.plist \
+      > ~/Library/LaunchAgents/com.cr8.web.plist
+    launchctl load ~/Library/LaunchAgents/com.cr8.web.plist
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.cr8.web</string>
+  <key>WorkingDirectory</key><string>__APP__/web</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/opt/homebrew/bin/node</string>
+    <string>__APP__/web/node_modules/next/dist/bin/next</string>
+    <string>start</string>
+    <string>-p</string><string>3100</string>
+  </array>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>NODE_ENV</key><string>production</string>
+    <key>PATH</key><string>/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+  </dict>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>ThrottleInterval</key><integer>10</integer>
+  <key>StandardOutPath</key><string>__HOME__/Library/Logs/cr8-web.log</string>
+  <key>StandardErrorPath</key><string>__HOME__/Library/Logs/cr8-web.log</string>
+</dict>
+</plist>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Runs the cr8 tunnel and keeps it running.
+
+  Homebrew's own `cloudflared service install` writes a LaunchDaemon whose
+  ProgramArguments are just the binary with no `tunnel run`, and no
+  /etc/cloudflared/config.yml for it to fall back on. It therefore starts, does
+  nothing, exits, and gets restarted every few seconds without ever registering
+  a connector - which Cloudflare reports as HTTP 530 on the domain. This agent
+  passes the arguments that were missing.
+
+  Install:
+    cp ops/launchd/com.cr8.tunnel.plist ~/Library/LaunchAgents/
+    launchctl load ~/Library/LaunchAgents/com.cr8.tunnel.plist
+
+  And disable the broken one, which otherwise flaps forever:
+    sudo launchctl bootout system/com.cloudflare.cloudflared
+    sudo rm /Library/LaunchDaemons/com.cloudflare.cloudflared.plist
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.cr8.tunnel</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/opt/homebrew/bin/cloudflared</string>
+    <string>tunnel</string>
+    <string>--config</string>
+    <string>__HOME__/.cloudflared/config.yml</string>
+    <string>run</string>
+    <string>cr8</string>
+  </array>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>ThrottleInterval</key><integer>10</integer>
+  <!-- NOT the repo's logs/ directory. macOS blocks LaunchAgents from
+       writing inside ~/Music, so launchd cannot open the file and the job
+       dies with EX_CONFIG (78) before cloudflared ever runs - which looks
+       exactly like a tunnel misconfiguration and is not one. -->
+  <key>StandardOutPath</key><string>__HOME__/Library/Logs/cr8-tunnel.log</string>
+  <key>StandardErrorPath</key><string>__HOME__/Library/Logs/cr8-tunnel.log</string>
+</dict>
+</plist>

@@ -1,0 +1,21 @@
+<section class="more-sheet">
+  <div class="micro">full vocabulary · {{ track.title }}</div>
+  <div class="chips">
+    {% for value in chips %}
+      {% set pressed = value in active.chips %}
+      {% include "owner/fragments/chip.html" %}
+    {% endfor %}
+  </div>
+  {% set bounce_ulid = track.bounce_ulid %}
+  {% include "owner/fragments/notes.html" %}
+  <form action="/songs/{{ track.song_ulid }}/edit" method="post" data-cr8-form
+    hx-post="/songs/{{ track.song_ulid }}/edit" hx-swap="none">
+    <label class="micro" for="status-more">status</label>
+    <select id="status-more" name="status">
+      {% for item in vocab.status %}<option value="{{ item }}" {% if item == track.status %}selected{% endif %}>{{ item }}</option>{% endfor %}
+    </select>
+    <label class="micro" for="collab-more">add collaborator</label>
+    <input id="collab-more" name="collab" type="text" maxlength="40">
+    <button class="button" type="submit">Commit metadata</button>
+  </form>
+</section>

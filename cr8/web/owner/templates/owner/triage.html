@@ -1,0 +1,10 @@
+{% extends "owner/base.html" %}
+{% block title %}Triage · cr8{% endblock %}
+{% block content %}
+  <div class="page-head">
+    <div><div class="micro">triage queue</div><h1><span id="today-count">{{ today_count }}</span> decided today</h1><p>One tap. Resume whenever.</p></div>
+  </div>
+  <div id="triage-card" class="triage-wrap">
+    {% include "owner/fragments/triage_card.html" %}
+  </div>
+{% endblock %}

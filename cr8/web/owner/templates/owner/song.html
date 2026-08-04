@@ -1,0 +1,93 @@
+{% extends "owner/base.html" %}
+{% block title %}{{ song.title }} · cr8{% endblock %}
+{% block content %}
+  <a class="meta" href="/">‹ library</a>
+  <div class="detail-head">
+    <div class="cover cover-lg era-{{ song.era_css }}">{{ song.title }}</div>
+    <div>
+      <h1>{{ song.title }}</h1>
+      {% if song.status == "released" %}<span class="released-badge">released</span>{% endif %}
+      <div class="meta">{{ song.era }} · {{ song.first_date|display_date_range(song.last_date) }}</div>
+      {% if unheard %}<div class="detail-unheard unheard">unheard</div>{% endif %}
+    </div>
+  </div>
+  {% set latest = song.latest %}
+  <div class="section-label mono">versions · {{ versions|length }}</div>
+  <section class="rail song-version-rail" aria-label="Version chain"
+    data-preserve-scroll="version-rail">
+    {% for version in versions %}
+      <button class="version" type="button" data-track-url="/api/tracks/{{ version.bounce_ulid }}" {% if loop.first %}aria-current="true"{% endif %}>
+        <span class="version-dot"></span>
+        <span class="version-label">{{ version.version_label }} · {{ version.date_label }}</span>
+        <span class="version-flag">{{ "playing" if loop.first else version.mixrole }}</span>
+      </button>
+    {% endfor %}
+  </section>
+  <section class="spec-grid" aria-label="Song metadata">
+    <div class="spec-cell"><div class="spec-k">key</div><div class="spec-v">{{ song.key_canon or "—" }}</div></div>
+    <div class="spec-cell"><div class="spec-k">camelot</div><div class="spec-v">{{ song.key_camelot or "—" }}</div></div>
+    <div class="spec-cell"><div class="spec-k">bpm</div><div class="spec-v">{{ song.bpm|round|int if song.bpm is not none else "—" }}</div></div>
+    <div class="spec-cell"><div class="spec-k">length</div><div class="spec-v">{{ latest.duration_label if latest else "—" }}</div></div>
+    <div class="spec-cell"><div class="spec-k">added</div><div class="spec-v">{{ song.first_date|display_date }}</div></div>
+    <div class="spec-cell"><div class="spec-k">versions</div><div class="spec-v">{{ song.version_count }}</div></div>
+  </section>
+  {% include "owner/fragments/downloads.html" %}
+  {% include "owner/fragments/stems.html" %}
+  {% if latest %}
+    {% if tag_panel %}
+      {% set panel = tag_panel %}
+      {% include "owner/fragments/tag_panel.html" %}
+    {% endif %}
+    <div class="section-label mono">catalog knowledge</div>
+    <div class="provenance-tags" aria-label="Derived and factual tags">
+      {% for tag in song.tag_panel.facts %}
+        <span class="provenance-tag provenance-{{ tag.provenance }}">
+          <span>{{ tag.dim }} · {{ tag.value }}</span>
+          <small>{{ tag.source }}{% if tag.author %} · {{ tag.author|actor_display }}{% endif %}</small>
+        </span>
+      {% endfor %}
+    </div>
+    <div class="section-label mono">needs your ear</div>
+    <div class="provenance-tags" aria-label="Subjective tags">
+      {% for tag in song.tag_panel.judgment %}
+        <span class="provenance-tag provenance-{{ tag.provenance }}">
+          <span>{{ tag.dim }} · {{ tag.value }}</span>
+          <small>{{ tag.source }}{% if tag.author %} · {{ tag.author|actor_display }}{% endif %}</small>
+        </span>
+      {% endfor %}
+    </div>
+    <div class="section-label mono">quick vibe</div>
+    <div class="tag-row">
+      {% include "owner/fragments/heart.html" with context %}
+      <div class="chips">
+        {% for value in chips[:6] %}
+          {% set pressed = value in active.chips %}
+          {% include "owner/fragments/chip.html" with context %}
+        {% endfor %}
+      </div>
+      <button class="button" type="button" hx-get="/more/{{ latest.bounce_ulid }}" hx-target="#more-sheet" hx-select="unset" hx-swap="innerHTML">more</button>
+    </div>
+    {% set bounce_ulid = latest.bounce_ulid %}
+    {% include "owner/fragments/notes.html" %}
+    <div id="more-sheet"></div>
+    <section class="neighbour-panel" aria-labelledby="neighbour-title">
+      <div class="section-label mono" id="neighbour-title">songs similar to this</div>
+      {% if neighbours %}
+        <form action="/songs/{{ song.public_id }}/apply-neighbours" method="post" data-cr8-form hx-boost="false">
+          <div class="neighbour-list">
+            {% for neighbour in neighbours %}
+              <label>
+                <input type="checkbox" name="neighbour_ulid" value="{{ neighbour.song_ulid }}">
+                <span>{{ neighbour.title }}</span>
+                <small>{{ neighbour.similarity_label }} chromaprint match</small>
+              </label>
+            {% endfor %}
+          </div>
+          <button class="button" type="submit">Apply my tags to selected neighbours</button>
+        </form>
+      {% else %}
+        <p class="quiet">No fingerprint neighbours yet. Run fingerprint enrichment to unlock this accelerator.</p>
+      {% endif %}
+    </section>
+  {% endif %}
+{% endblock %}

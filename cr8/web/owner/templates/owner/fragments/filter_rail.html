@@ -1,0 +1,123 @@
+<div id="filter-sheet-body" class="filter-sheet-body">
+  <div class="rail-heading">
+    <span class="micro">Filters</span>
+    <a class="clear-filter mono" href="/" data-filter-link
+      hx-get="/" hx-target="#library-results" hx-select="#library-results"
+      hx-swap="outerHTML" hx-push-url="true">clear all</a>
+  </div>
+  <nav class="filter-stack" aria-label="Library facets">
+    <details class="rail-filter-group" open>
+      <summary class="filter-label">view</summary>
+      <div class="rail-filter-options">
+        <a class="rail-filter" href="/" data-filter-link
+          hx-get="/" hx-target="#library-results" hx-select="#library-results"
+          hx-swap="outerHTML" hx-push-url="true"
+          aria-pressed="{{ 'true' if not selected.unheard and not selected.hearted and not selected.untagged_dim else 'false' }}">
+          <span>all songs</span><span class="filter-count">{{ total }}</span>
+        </a>
+        {% for label, url, active, count, signal in (
+          ("unheard", unheard_url, selected.unheard, unheard_count, true),
+          ("hearted by me", hearted_url, selected.hearted, hearted_count, false),
+          ("no vibe yet", untagged_url, ("vibe" in selected.untagged_dim), untagged_count, true)
+        ) %}
+          <a class="rail-filter{% if signal %} signal-filter{% endif %}"
+            href="{{ url }}" data-filter-link
+            hx-get="{{ url }}" hx-target="#library-results"
+            hx-select="#library-results" hx-swap="outerHTML"
+            hx-push-url="true" aria-pressed="{{ 'true' if active else 'false' }}">
+            <span>{{ label }}</span><span class="filter-count">{{ count }}</span>
+          </a>
+        {% endfor %}
+        <a class="rail-filter" href="{{ quality_url }}" data-filter-link
+          hx-get="{{ quality_url }}" hx-target="#library-results"
+          hx-select="#library-results" hx-swap="outerHTML" hx-push-url="true"
+          aria-pressed="{{ 'true' if selected.skip_sketches else 'false' }}">
+          <span>skip sketches under 90s</span>
+        </a>
+      </div>
+    </details>
+
+    {% for name in ("era","key","status") %}
+      {% if filters[name]|length > 1 %}
+        <details class="rail-filter-group" open data-facet-group="{{ name }}">
+          <summary class="filter-label">{{ name }}</summary>
+          {% if filters[name]|length > 12 %}
+            <input class="facet-search mono" type="search"
+              data-facet-search placeholder="Filter {{ name }}…" aria-label="Filter {{ name }} values">
+          {% endif %}
+          <div class="rail-filter-options">
+            {% for item in filters[name] %}
+              <a class="rail-filter{% if item.released %} released-filter{% endif %}"
+                href="{{ item.url }}" data-filter-link
+                hx-get="{{ item.url }}" hx-target="#library-results"
+                hx-select="#library-results" hx-swap="outerHTML"
+                hx-push-url="true"
+                aria-pressed="{{ 'true' if item.active else 'false' }}">
+                <span>{{ item.label }}</span><span class="filter-count">{{ item.count }}</span>
+              </a>
+            {% endfor %}
+          </div>
+        </details>
+      {% endif %}
+    {% endfor %}
+
+    {% for name in ("vibe","instr","collab","use") %}
+      <details class="rail-filter-group" open data-facet-group="{{ name }}">
+        <summary class="filter-label">{{ name }}</summary>
+        {% if tag_filters[name]|length > 12 %}
+          <input class="facet-search mono" type="search"
+            data-facet-search placeholder="Filter {{ name }}…" aria-label="Filter {{ name }} values">
+        {% endif %}
+        <div class="rail-filter-options">
+          {% for item in tag_filters[name] %}
+            <a class="rail-filter" href="{{ item.url }}"
+              data-filter-link data-multi-url="{{ item.multi_url }}"
+              data-filter-dim="{{ name }}" data-filter-value="{{ item.label }}"
+              hx-get="{{ item.url }}" hx-target="#library-results"
+              hx-select="#library-results" hx-swap="outerHTML"
+              hx-push-url="true"
+              aria-pressed="{{ 'true' if item.active else 'false' }}">
+              <span>{{ item.label }}</span><span class="filter-count">{{ item.count }}</span>
+            </a>
+          {% endfor %}
+          {% set untagged_filter = tag_untagged_filters[name] %}
+          <a class="rail-filter rail-untagged" href="{{ untagged_filter.url }}"
+            data-filter-link hx-get="{{ untagged_filter.url }}"
+            hx-target="#library-results" hx-select="#library-results"
+            hx-swap="outerHTML" hx-push-url="true"
+            aria-pressed="{{ 'true' if untagged_filter.active else 'false' }}">
+            <span>— untagged —</span>
+            <span class="filter-count">{{ untagged_filter.count }}</span>
+          </a>
+        </div>
+      </details>
+    {% endfor %}
+
+    <details class="rail-filter-group">
+      <summary class="filter-label">sort</summary>
+      <div class="rail-filter-options">
+        {% for item in sorts %}
+          <a class="rail-filter" href="{{ item.url }}" data-filter-link
+            hx-get="{{ item.url }}" hx-target="#library-results"
+            hx-select="#library-results" hx-swap="outerHTML"
+            hx-push-url="true" aria-pressed="{{ 'true' if item.active else 'false' }}">
+            <span>{{ item.label }}</span>
+          </a>
+        {% endfor %}
+      </div>
+    </details>
+    <details class="rail-filter-group">
+      <summary class="filter-label">collections</summary>
+      <div class="rail-filter-options">
+        {% for collection in collections %}
+          <a class="rail-filter" href="/collections/{{ collection.ulid }}">
+            <span>{{ collection.name }}</span>
+            <span class="filter-count">{{ collection.track_count }}</span>
+          </a>
+        {% else %}
+          <a class="rail-filter" href="/collections"><span>make one</span></a>
+        {% endfor %}
+      </div>
+    </details>
+  </nav>
+</div>

@@ -1,0 +1,94 @@
+<section id="song-stems"
+  {% if stem_job and stem_job.state in ("queued", "running") %}
+    hx-get="/songs/{{ song_ulid }}/stems" hx-trigger="every 5s"
+    hx-select="unset" hx-swap="outerHTML"
+  {% endif %}
+  aria-labelledby="stems-heading">
+  <div class="section-label mono" id="stems-heading">stems</div>
+
+  {% if source_stems %}
+    <div class="micro">source exports</div>
+    <div class="rail" aria-label="Source stem exports">
+      {% for stem in source_stems %}
+        <div class="stem-row">
+          <button class="version" type="button"
+            data-track-id="{{ stem.bounce_ulid }}"
+            data-track-url="/api/tracks/{{ stem.bounce_ulid }}"
+            data-audio-url="/m/{{ stem.bounce_ulid }}"
+            data-track-title="{{ stem.title }} · {{ stem.mixrole }}">
+            <span class="version-dot"></span>
+            <span class="version-label">{{ stem.mixrole }} · {{ stem.duration_label }}</span>
+            <span class="version-flag">source</span>
+          </button>
+          {% set original = stem.downloads|selectattr("format", "equalto", "original")|first %}
+          {% if original %}
+            <a class="stem-download mono"
+              href="/download/{{ stem.bounce_ulid }}?format=original" download
+              aria-label="Download {{ stem.mixrole }} source stem">↓ {{ original.ext }} · {{ original.size_label }}</a>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {% if separated_stems %}
+    <div class="micro">
+      separated
+      {% if stems_stale %}<span class="unheard">stale source</span>{% endif %}
+    </div>
+    <div class="rail" aria-label="Separated stems">
+      {% for stem in separated_stems %}
+        <div class="stem-row">
+          <button class="version" type="button"
+            data-track-id="{{ stem.bounce_ulid }}"
+            data-track-url="/api/tracks/{{ stem.bounce_ulid }}"
+            data-audio-url="/m/{{ stem.bounce_ulid }}"
+            data-track-title="{{ stem.title }} · {{ stem.stem_kind }}">
+            <span class="version-dot"></span>
+            <span class="version-label">
+              {{ stem.stem_kind }} · {{ stem.duration_label }}
+              {% if stem.stem_kind == "other" %} · leftovers{% endif %}
+            </span>
+            <span class="version-flag">{{ stem.stem_recipe }}</span>
+          </button>
+          <a class="stem-download mono"
+            href="/download/stem/{{ stem.bounce_ulid }}" download
+            aria-label="Download {{ stem.stem_kind }} stem">↓ flac{% if stem.download_size_label %} · {{ stem.download_size_label }}{% endif %}</a>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="quiet">no stems yet — separate this and you get vocals, instrumental, drums, bass, other. About three minutes.</p>
+  {% endif %}
+
+  {% if stem_job and stem_job.state == "queued" %}
+    <span class="button" role="status">queued</span>
+  {% elif stem_job and stem_job.state == "running" %}
+    <span class="button" role="status">separating · pass 1–2</span>
+  {% elif stem_job and stem_job.state == "failed" %}
+    <p class="error" role="alert">{{ stem_job.error or "separation failed" }}</p>
+    <form hx-post="/stems/{{ latest.bounce_ulid }}" hx-target="#song-stems"
+      hx-select="unset" hx-swap="outerHTML">
+      <input type="hidden" name="recipe" value="default-v1">
+      <button class="button" type="submit">retry separation</button>
+    </form>
+  {% elif latest and not has_default_stems %}
+    <form hx-post="/stems/{{ latest.bounce_ulid }}" hx-target="#song-stems"
+      hx-select="unset" hx-swap="outerHTML">
+      <input type="hidden" name="recipe" value="default-v1">
+      <button class="button primary" type="submit">separate</button>
+    </form>
+  {% elif latest and stems_stale %}
+    <form hx-post="/stems/{{ latest.bounce_ulid }}" hx-target="#song-stems"
+      hx-select="unset" hx-swap="outerHTML">
+      <input type="hidden" name="recipe" value="default-v1">
+      <button class="button" type="submit">redo from current source</button>
+    </form>
+  {% elif latest and not has_hq_stems %}
+    <form hx-post="/stems/{{ latest.bounce_ulid }}" hx-target="#song-stems"
+      hx-select="unset" hx-swap="outerHTML">
+      <input type="hidden" name="recipe" value="hq-v1">
+      <button class="button" type="submit">redo in high quality</button>
+    </form>
+  {% endif %}
+</section>

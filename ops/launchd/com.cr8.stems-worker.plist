@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Drain the stem separation queue.
+
+  Without this, "Rip stems" queues a job that nothing ever runs: the button
+  spins for five minutes and resets, and clicking again is a no-op because the
+  job is already queued. There is no error anywhere, because nothing failed.
+
+  Four things in the previous version of this file were wrong, and all four are
+  the same mistake - a deploy artefact written for one machine and never run:
+  it invoked .venv/bin/crate, which has not existed since the crate->cr8
+  rename; it hardcoded a path under __APP__; it set UserName, which is
+  a LaunchDaemon key and is ignored here; and it logged inside ~/Music, where
+  macOS refuses a LaunchAgent write access and kills the job with EX_CONFIG
+  before the program starts.
+
+  Separation is minutes of torch across every core on the machine that also
+  serves the app, so it runs at background priority and the worker takes a
+  non-blocking lock - a tick that finds one already running stands down rather
+  than stacking a second on top.
+
+  Install:
+    sed -e "s|__HOME__|$HOME|g" -e "s|__APP__|$PWD|g" ops/launchd/com.cr8.stems-worker.plist \
+      > ~/Library/LaunchAgents/com.cr8.stems-worker.plist
+    launchctl load ~/Library/LaunchAgents/com.cr8.stems-worker.plist
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.cr8.stems-worker</string>
+  <key>WorkingDirectory</key><string>__APP__</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>__APP__/.venv/bin/python3</string>
+    <string>-m</string><string>cr8.cli</string>
+    <string>--config</string><string>__APP__/config.toml</string>
+    <string>--db</string><string>__APP__/catalog.db</string>
+    <string>stems</string><string>worker</string><string>--drain</string>
+  </array>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <!-- ffmpeg and ffprobe are required to decode the source and encode the
+         stems; a LaunchAgent gets no login shell and would not find them. -->
+    <key>PATH</key><string>/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+  </dict>
+  <key>StartInterval</key><integer>180</integer>
+  <key>RunAtLoad</key><true/>
+  <key>ThrottleInterval</key><integer>180</integer>
+  <key>Nice</key><integer>15</integer>
+  <key>LowPriorityIO</key><true/>
+  <key>ProcessType</key><string>Background</string>
+  <key>StandardOutPath</key><string>__HOME__/Library/Logs/cr8-stems-worker.log</string>
+  <key>StandardErrorPath</key><string>__HOME__/Library/Logs/cr8-stems-worker.log</string>
+</dict>
+</plist>

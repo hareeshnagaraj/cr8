@@ -1,0 +1,55 @@
+{% extends "owner/base.html" %}
+{% block title %}Members · cr8{% endblock %}
+{% block content %}
+  <div class="page-head">
+    <div>
+      <div class="micro">full-access accounts</div>
+      <h1>Members</h1>
+      <p>Everyone listed here can use the entire app.</p>
+    </div>
+  </div>
+
+  {% if generated %}
+    <section class="member-password" role="status">
+      <div class="micro">password generated for {{ generated.username }}</div>
+      <strong class="mono">{{ generated.password }}</strong>
+      <p>Copy this now and hand it to {{ generated.display }}. It is not shown again.</p>
+    </section>
+  {% endif %}
+
+  <form class="member-form" action="/members" method="post"
+    data-cr8-form hx-boost="false">
+    <label>
+      <span class="micro">username</span>
+      <input name="username" type="text" maxlength="40" required
+        autocomplete="off" placeholder="henry">
+    </label>
+    <label>
+      <span class="micro">display name</span>
+      <input name="display" type="text" maxlength="80" required
+        autocomplete="off" placeholder="Henry">
+    </label>
+    <button class="button primary" type="submit">Add member</button>
+  </form>
+  {% if error %}<p class="error">{{ error }}</p>{% endif %}
+
+  <div class="section-label mono">accounts · {{ members|length }}</div>
+  <div class="member-list">
+    {% for member in members %}
+      <article class="member-row">
+        <div>
+          <strong>{{ member.display }}</strong>
+          <span class="meta mono">@{{ member.username }}</span>
+        </div>
+        {% if member.id == owner.user_id %}
+          <span class="meta">signed in</span>
+        {% else %}
+          <form action="/members/{{ member.id }}/remove" method="post"
+            data-cr8-form hx-boost="false">
+            <button class="button danger" type="submit">Remove</button>
+          </form>
+        {% endif %}
+      </article>
+    {% endfor %}
+  </div>
+{% endblock %}

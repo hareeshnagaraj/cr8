@@ -1,0 +1,8 @@
+{% set item = track if track is defined and track else latest %}
+{% set is_pressed = pressed if pressed is defined else active.heart %}
+<button class="heart" type="button" aria-pressed="{{ 'true' if is_pressed else 'false' }}" aria-label="Heart {{ item.title }}"
+  data-optimistic hx-post="/reactions/{{ item.bounce_ulid }}/heart"
+  hx-target="this" hx-select="unset" hx-swap="outerHTML">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.7C7.2 17.2 3 13.6 3 9.3 3 6.4 5.2 4.5 7.6 4.5c1.8 0 3.4 1 4.4 2.6 1-1.6 2.6-2.6 4.4-2.6 2.4 0 4.6 1.9 4.6 4.8 0 4.3-4.2 7.9-9 11.4z"/></svg>
+</button>
+{% include "owner/fragments/undo_toast.html" %}

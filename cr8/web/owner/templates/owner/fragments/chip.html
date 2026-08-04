@@ -1,0 +1,7 @@
+{% set item = track if track is defined and track else latest %}
+<button class="chip" type="button" aria-pressed="{{ 'true' if pressed else 'false' }}"
+  data-tag-filter data-tag-dim="vibe" data-tag-value="{{ value }}"
+  data-tag-post="/songs/{{ item.song_ulid }}/tags/toggle"
+  data-bounce-ulid="{{ item.bounce_ulid }}"
+  hx-select="unset">{{ value }}</button>
+{% include "owner/fragments/undo_toast.html" %}
