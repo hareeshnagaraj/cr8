@@ -16,6 +16,16 @@ is infrastructure.
 This is a project, not a business. Most personal circles don’t need a million
 listeners. They need something fast, reliable, and theirs.
 
+### Who built this
+
+cr8 started as a passion project between **Hareesh** and **Henry** — two friends
+who’ve made music together for over a decade (William & Mary) and wanted a
+better way to share unfinished work than another SaaS upload box. Our music
+project is **[all vars](https://www.instagram.com/allvarsmusic/)**
+(@allvarsmusic on Instagram, Spotify, etc.). When the tool started working for
+us, we pushed it further and opened it so anyone can run a crate and build with
+us. Open source on purpose.
+
 ---
 
 ## The full story (formatted)
