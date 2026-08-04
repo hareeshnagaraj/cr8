@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>cr8 collaborator handoff — fully local</title>
+  <meta name="description" content="Human + agent handoff for running cr8 fully local: clone, init, setup, scan, collaborate via PRs.">
+  <link rel="canonical" href="https://hareeshnagaraj.github.io/cr8/handoff.html">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="cr8">
+  <meta property="og:title" content="cr8 collaborator handoff — fully local">
+  <meta property="og:description" content="Clone the public repo, run everything on your machine, open a PR. No shared production access required.">
+  <meta property="og:url" content="https://hareeshnagaraj.github.io/cr8/handoff.html">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <header>
+    <nav class="nav" aria-label="Site">
+      <a href="./">Home</a>
+      <a href="vision.html">Vision</a>
+      <a href="architecture.html">Architecture</a>
+      <a class="is-here" href="handoff.html">Handoff</a>
+      <a href="https://github.com/hareeshnagaraj/cr8">GitHub</a>
+    </nav>
+    <div class="kicker">cr8 collaborator handoff</div>
+    <h1>Fully local. Your crate. Your machine.</h1>
+    <p class="dek">This is the onboarding page for people invited to build cr8 with us — and for coding agents with full LLM access. Everything below is designed so you never need production credentials, a remote server, or someone else’s music archive.</p>
+    <p class="meta">Repo: <a href="https://github.com/hareeshnagaraj/cr8">github.com/hareeshnagaraj/cr8</a> · Story: <a href="./">Pages home</a></p>
+  </header>
+
+  <section class="notegrid" aria-label="What you are getting">
+    <div class="note">
+      <b>Fully local</b>
+      <span>API, web, DB, and optional corpus all run on your laptop. No cloud account required to develop.</span>
+    </div>
+    <div class="note">
+      <b>Your instance</b>
+      <span>You are not logging into production. You create your own owner user at /setup.</span>
+    </div>
+    <div class="note">
+      <b>Public code</b>
+      <span>Fork, branch, PR. Merges stay controlled by repo collaborators.</span>
+    </div>
+    <div class="note">
+      <b>Agent-ready</b>
+      <span>Paste the agent block at the bottom into Claude / Cursor / Codex / Grok and let it drive setup.</span>
+    </div>
+  </section>
+
+  <div class="pull">Goal: clone → init → two processes → /setup → library loads. If that works, the handoff worked.</div>
+
+  <h2>What cr8 is (30 seconds)</h2>
+  <p>Self-hosted listening software for <strong>original / unreleased</strong> music. Dig the archive, tag while it plays, send links to a circle, optional stems. The music folder is <strong>read-only</strong>; opinions live in SQLite; streams come from a disposable mirror.</p>
+  <p>Not a SaaS. Not our production catalog. <strong>You run your own crate.</strong></p>
+
+  <h2>Requirements</h2>
+  <ul>
+    <li><strong>Python 3.12+</strong> (3.14 is fine)</li>
+    <li><strong>Node.js + pnpm</strong></li>
+    <li><strong>ffmpeg + ffprobe</strong> on <code>PATH</code> (hard requirement for media work)</li>
+    <li>macOS or Linux preferred; Windows may work with extra path care</li>
+  </ul>
+  <p>Optional later: <code>keyfinder-cli</code> / <code>aubio</code> for enrichment. Missing tools are skipped cleanly.</p>
+
+  <h2>Human path — local setup</h2>
+  <pre><code>git clone https://github.com/hareeshnagaraj/cr8.git
+cd cr8
+
+python3 -m venv .venv
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
+pip install -e '.[dev]'
+
+cr8 init
+# when prompted: corpus root = any folder of audio you own
+# (or a temporary empty tree just to boot the UI)
+
+cd web && pnpm install && cd ..
+
+# terminal 1 — API
+./.venv/bin/uvicorn cr8.web.owner.app:create_app --factory \
+  --host 127.0.0.1 --port 8080
+
+# terminal 2 — web
+cd web && pnpm dev
+# → http://127.0.0.1:3100</code></pre>
+
+  <p>Then open <strong>http://127.0.0.1:3100/setup</strong> and create the first user. That is <em>your</em> owner account.</p>
+  <p>If you pointed init at real music:</p>
+  <pre><code>cr8 scan
+# when you want streamable mirrors:
+# cr8 build</code></pre>
+  <p>Empty or tiny corpora still prove the app boots. Full dig/tag value needs real files.</p>
+
+  <h2>What “works” means</h2>
+  <ul>
+    <li><code>/setup</code> creates a user and lands you in the app</li>
+    <li>Login survives refresh</li>
+    <li>Library page loads (even with 0 tracks)</li>
+    <li>After <code>cr8 scan</code> (+ build if needed), a track can play from the dock</li>
+    <li>You never needed production SSH, secrets, or ops/env</li>
+  </ul>
+
+  <h2>How we collaborate on code</h2>
+  <ul>
+    <li>Repo is <strong>public</strong> — anyone can read and open PRs</li>
+    <li><strong>Merges are restricted</strong> — only collaborators (invited people) can merge to <code>main</code></li>
+    <li>Prefer feature branches + pull requests</li>
+    <li>Do not commit secrets, <code>ops/env</code>, passwords, or personal hostnames</li>
+    <li>Operator deploy docs live under <code>ops/</code> for people who self-host later — skip for pure local dev</li>
+  </ul>
+
+  <h2>GitHub access</h2>
+  <p>Collaborators get a GitHub invite for write access. Accept it, then push branches to the main repo (or fork + PR — either is fine). If you only need to run the app, a plain clone is enough.</p>
+
+  <h2>Read next</h2>
+  <ul>
+    <li><a href="vision.html">Vision</a> — why this product shape</li>
+    <li><a href="architecture.html">Architecture</a> — corpus / catalog / mirror / edge</li>
+    <li><a href="https://github.com/hareeshnagaraj/cr8/blob/main/README.md">README</a> — install reference</li>
+  </ul>
+
+  <h2>Agent handoff (paste into your LLM)</h2>
+  <p>If you have a coding agent with shell access, paste the following block as the task. It is intentionally self-contained and local-only.</p>
+
+  <div class="agent-block" role="region" aria-label="Agent handoff prompt"><b>TASK: Boot cr8 fully local and verify</b>
+
+You are helping a developer set up https://github.com/hareeshnagaraj/cr8 on THEIR machine.
+
+Goals (in order):
+1. Clone the public repo (or use existing checkout).
+2. Create venv, pip install -e '.[dev]'.
+3. Run `cr8 init` non-interactively if possible, or with a temp corpus directory if the user has no music path yet.
+4. Install web deps (pnpm in web/).
+5. Start API on 127.0.0.1:8080 and Next on 127.0.0.1:3100.
+6. Verify: GET /healthz or /login on :8080, open :3100/setup or /login, confirm app shell loads.
+7. Optionally run `cr8 scan` if a corpus exists; do not invent production deploy steps.
+
+Hard constraints:
+- DO NOT request or use production secrets, ops/env, SSH hosts, or cr8.li credentials.
+- DO NOT write into any music corpus outside the configured root; the system is read-only to the archive.
+- DO NOT commit secrets, config.toml with personal paths if the user forbids, or ops/env.
+- Prefer fully local. Skip Cloudflare, deploy.sh, and launchd unless the user explicitly asks to self-host publicly.
+- If ffmpeg/ffprobe missing, install via brew/apt or stop with a clear message.
+- If ports 8080/3100 busy, free them or choose alternates and document.
+
+Acceptance:
+- pytest can wait; first bar is boot + /setup path.
+- Report exact commands run, URLs, and any blockers.
+
+Context:
+- Product: self-hosted crate for unreleased music (FastAPI + SQLite + Next.js).
+- Public story: https://hareeshnagaraj.github.io/cr8/
+- Architecture brief: https://hareeshnagaraj.github.io/cr8/architecture.html
+</div>
+
+  <p class="sources">
+    Built as a passion project so friends can share original music without a SaaS in the middle.
+    Open source so everyone can run a crate.
+  </p>
+</main>
+</body>
+</html>

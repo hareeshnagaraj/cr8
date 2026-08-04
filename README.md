@@ -36,6 +36,7 @@ in the same brief format as the long-form notes:
 - **[Landing](https://hareeshnagaraj.github.io/cr8/)** — what cr8 is
 - **[Vision](https://hareeshnagaraj.github.io/cr8/vision.html)** — why unreleased music needs a room
 - **[Architecture](https://hareeshnagaraj.github.io/cr8/architecture.html)** — corpus → catalog → mirror → app
+- **[Handoff](https://hareeshnagaraj.github.io/cr8/handoff.html)** — fully local setup + agent prompt
 
 ---
 
