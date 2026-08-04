@@ -73,8 +73,9 @@ class CSRFMiddleware:
     # to abuse, and these pages are served from a bare template that loads no JS,
     # so they cannot send the custom header. Requiring it here made login
     # impossible (403 on every attempt). Cookies remain SameSite=Lax, which is the
-    # actual CSRF defence for login.
-    EXEMPT_PATHS = frozenset({"/login"})
+    # actual CSRF defence for login. Setup is the same shape — a plain form POST
+    # before any session exists — and it hard-stops once the first user is created.
+    EXEMPT_PATHS = frozenset({"/login", "/setup"})
 
     def __init__(self, app: Any) -> None:
         self.app = app
