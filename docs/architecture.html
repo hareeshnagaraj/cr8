@@ -1,181 +1,98 @@
-<title>cr8 — Architecture</title>
-<style>
-:root {
-  --bg: #faf9f7; --ink: #1a1917; --ink2: rgba(26,25,23,.62); --ink3: rgba(26,25,23,.38);
-  --line: rgba(26,25,23,.12); --card: #f1efeb; --accent: #1d9aa8; --signal: #c9342a;
-  --pelicana: #e2705b; --nova: #3fc6d1; --working: #c3d64a; --mono: ui-monospace, "SF Mono", Menlo, monospace;
-}
-@media (prefers-color-scheme: dark) { :root {
-  --bg: #191919; --ink: #f2f0ec; --ink2: rgba(242,240,236,.6); --ink3: rgba(242,240,236,.34);
-  --line: rgba(242,240,236,.14); --card: #212120; --accent: #4ecbd8;
-}}
-:root[data-theme="dark"] {
-  --bg: #191919; --ink: #f2f0ec; --ink2: rgba(242,240,236,.6); --ink3: rgba(242,240,236,.34);
-  --line: rgba(242,240,236,.14); --card: #212120; --accent: #4ecbd8;
-}
-:root[data-theme="light"] {
-  --bg: #faf9f7; --ink: #1a1917; --ink2: rgba(26,25,23,.62); --ink3: rgba(26,25,23,.38);
-  --line: rgba(26,25,23,.12); --card: #f1efeb; --accent: #1d9aa8;
-}
-body { background: var(--bg); color: var(--ink); font: 16px/1.65 -apple-system, "Helvetica Neue", Helvetica, sans-serif;
-  margin: 0; padding: 48px 24px 96px; }
-main { max-width: 760px; margin: 0 auto; }
-h1 { font-size: 34px; line-height: 1.15; letter-spacing: -0.022em; margin: 0 0 6px; text-wrap: balance; }
-.sub { color: var(--ink2); margin: 0 0 40px; max-width: 62ch; }
-h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .09em; color: var(--ink2);
-  margin: 52px 0 14px; padding-top: 18px; border-top: 1px solid var(--line); }
-h3 { font-size: 17px; letter-spacing: -0.01em; margin: 26px 0 8px; }
-p { margin: 0 0 14px; max-width: 68ch; }
-li { margin-bottom: 6px; max-width: 66ch; }
-code, .p { font-family: var(--mono); font-size: 13.5px; background: var(--card); padding: 1px 5px; border-radius: 4px; }
-table { border-collapse: collapse; width: 100%; font-size: 14px; margin: 12px 0 20px; }
-.tw { overflow-x: auto; }
-th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--ink2);
-  padding: 6px 12px 6px 0; border-bottom: 1px solid var(--line); }
-td { padding: 8px 12px 8px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
-td:first-child { white-space: nowrap; font-weight: 600; }
-.num { font-variant-numeric: tabular-nums; }
-.dot { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: baseline; }
-.warn { border-left: 3px solid var(--signal); background: var(--card); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; max-width: 62ch; }
-.ok { color: var(--accent); font-weight: 600; }
-.pending { color: var(--ink3); }
-.status td:first-child { font-weight: 400; }
-.kv { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 16px 0 8px; }
-.kv > div { background: var(--card); border-radius: 10px; padding: 12px 14px; }
-.kv b { display: block; font-size: 22px; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
-.kv span { font-size: 12px; color: var(--ink2); text-transform: uppercase; letter-spacing: .06em; }
-pre.mermaid { background: var(--card); border-radius: 12px; padding: 16px; overflow-x: auto; }
-.foot { color: var(--ink3); font-size: 13px; margin-top: 56px; }
-a { color: var(--accent); }
-</style>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>cr8: one private music archive, rebuilt as a living instrument</title>
+  <meta name="description" content="How a private unreleased music archive becomes a fast shared catalog, a listening app, a tagging surface, stems, and a deployable service — without writing into the corpus.">
+  <link rel="canonical" href="https://hareeshnagaraj.github.io/cr8/architecture.html">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="cr8">
+  <meta property="og:title" content="cr8: one private music archive, rebuilt as a living instrument">
+  <meta property="og:description" content="How a private unreleased music archive becomes a fast shared catalog and listening instrument without moving the corpus into someone else’s cloud.">
+  <meta property="og:url" content="https://hareeshnagaraj.github.io/cr8/architecture.html">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
 <main>
-<h1>cr8 — architecture</h1>
-<p class="sub">A self-hosted band music system for the <span class="p">music corpus</span> archive:
-catalog every track, tag while listening, and give every bandmate an attributed account.
-Source of truth for review; reflects the system as built and running. Last updated 2026-07-30.</p>
+  <header>
+    <nav class="nav" aria-label="Site">
+      <a href="./">Home</a>
+      <a href="vision.html">Vision</a>
+      <a class="is-here" href="architecture.html">Architecture</a>
+      <a href="https://github.com/hareeshnagaraj/cr8">GitHub</a>
+    </nav>
+    <div class="kicker">cr8 technical overview</div>
+    <h1>One private music archive, rebuilt as a living instrument</h1>
+    <p class="dek">How unreleased music becomes a fast shared catalog, a private streaming app, a tagging surface, a stem machine, and a deployable service — without moving the archive into somebody else’s cloud.</p>
+  </header>
 
-<div class="kv">
-  <div><b class="num">121 GB</b><span>corpus, read-only</span></div>
-  <div><b class="num">11,293</b><span>audio files</span></div>
-  <div><b class="num">1,280</b><span>curated bounces</span></div>
-  <div><b class="num">472</b><span>songs resolved</span></div>
-  <div><b class="num">652</b><span>mirror tracks</span></div>
-  <div><b class="num">~$1/mo</b><span>total run cost</span></div>
-</div>
+  <section class="numbers" aria-label="What the system is for">
+    <div class="num"><b>Corpus</b><span>read-only authority</span></div>
+    <div class="num"><b>Catalog</b><span>opinions &amp; people</span></div>
+    <div class="num"><b>Mirror</b><span>disposable streams</span></div>
+  </section>
 
-<h2>The problem</h2>
-<p>Years of original unreleased music in one dump: demo bounces (deliberate wav+mp3 twin pairs),
-661 Ableton project folders, sidecars, stem splits. Filenames were the only metadata —
-but a strong convention (<span class="p">M-D-YY-title-key-vN</span>) encodes date, title, key,
-and version on ~93% of the curated layer. No tags anywhere, no backup anywhere, and the current
-share tool (Samply) has no tag model at the API level. The band needs to browse, stream, tag
-<em>while listening</em>, with every judgment tied to the member who made it.</p>
+  <h2>The read</h2>
+  <p>cr8 turns a private, messy, unreleased music archive into a live social instrument without uploading that archive into a platform. The catalog can live on a machine you control. The app can be reachable anywhere. Friends can listen, tag, send, upload, and separate stems. The original files remain read-only.</p>
+  <p>The thesis is not “one computer can serve music.” The thesis is that <strong>unreleased creative work needs a different product shape</strong> from released music. Streaming apps, file shares, sample marketplaces, and folder trees all fail in different ways because they treat the file, the finished song, the share link, or the library as the center. cr8 makes the act of listening and deciding the center.</p>
 
-<h2>System overview</h2>
-<pre class="mermaid">
-flowchart TD
-  C["music corpus corpus\n(SACRED, read-only)"] -->|scan · parse · resolve| DB[("catalog.db\nSQLite WAL — source of truth")]
-  MIK["Mixed In Key DB"] -->|import| DB
-  DET["keyfinder-cli · aubio\nchromaprint"] -->|detect · fingerprint| DB
-  DB -->|"build (atomic, content-hash keyed)"| M["mirror/\nmp3-320 + peaks + era covers\nULID-named, disposable"]
-  M --> APP["cr8 app\n127.0.0.1:8080\ntailscale funnel (authenticated)"]
-  DB <--> APP
-  APP -->|"member accounts"| U1["Library · player · triage\ntags · hearts · verdicts · notes"]
-  C -->|restic nightly| B1[("Repo A — jukebox\nspare MBP via Tailscale")]
-  C -->|restic nightly| B2[("Repo B — Backblaze B2\ndelete-incapable key")]
-  DB -->|"VACUUM INTO + integrity_check"| B1
-</pre>
+  <h2>What existed at the beginning</h2>
+  <p>The starting point was not a product spec. It was a hard drive full of music: demos, jams, half-finished ideas, multiple versions of the same track. Filenames carried dates, titles, keys, and version numbers often enough to parse. Project folders mattered. “Eras” were periods of making, not genres.</p>
+  <p>The problem was retrieval. A good bounce could exist, but nobody could find it when it mattered. Sending a track meant remembering a filename, hunting a folder, uploading a file, and hoping the reply arrived with enough context to mean anything. The work was technically stored and practically missing.</p>
 
-<h2>Components</h2>
-<div class="tw"><table>
-  <tr><th>Component</th><th>What it is</th><th>Key rulings</th></tr>
-  <tr><td>cr8 CLI</td><td>Python 3.13+ package; scan, parse, resolve, review, import-mik, detect, fingerprint, scrub, build, push, verify, csvio</td><td>Every command idempotent; corpus never written, renamed, or retagged; the <span class="p">' : '</span> path only ever travels as argv (shell=True banned by test)</td></tr>
-  <tr><td>catalog.db</td><td>SQLite (WAL) — songs, bounces (wav+mp3 twins = one row), files, review queue, reactions, shares, analysis provenance</td><td>Source of truth for all tags; immutable ULIDs on every public identifier; human fields never touched by machine passes; key/BPM precedence human&nbsp;&gt;&nbsp;filename&nbsp;&gt;&nbsp;MIK&nbsp;&gt;&nbsp;detected</td></tr>
-  <tr><td>mirror/</td><td>Derived mp3-320 library: artist's own mp3 twins copied bit-for-bit, wav-only transcoded; ID3v2.4 tags, ReplayGain, audiowaveform peaks, generated era covers</td><td>Atomic builds (tmp → verify → rename), content-hash incrementals, cascade guards; counts as zero backup copies</td></tr>
-  <tr><td>Web app</td><td>FastAPI + Jinja2 + htmx; library/search (FTS5), persistent player, triage queue, tag chips, batch ops, activity, and member administration</td><td>One full-access surface for every account; tags, hearts, verdicts, and notes retain the writing username</td></tr>
-  <tr><td>Access</td><td>Tailscale Funnel sends HTTPS 443 to <span class="p">127.0.0.1:8080</span></td><td>Every catalog, media, and write route requires a username/password session; there is no guest process or token exchange</td></tr>
-  <tr><td>Backup</td><td>restic → jukebox (spare MBP) + Backblaze B2, nightly; monthly <span class="p">check --read-data-subset</span> + restore drill</td><td>Never snapshots the hot WAL db (VACUUM INTO + integrity_check first); B2 key lacks deleteFiles + Object Lock; long retention tail; weekly scrub re-hashes originals so corruption is caught before retention ages out good copies</td></tr>
-  <tr><td>Automation</td><td>launchd: WatchPaths ingest (bounce → phone in minutes) + one nightly orchestrator + monthly verify</td><td>Every failure degrades to stale, never wrong; healthchecks.io dead-man ping only when ALL stages succeed</td></tr>
-  <tr><td>Optional layers</td><td>Navidrome sidecar (owner CarPlay/offline via Subsonic apps); Samply API bridge (curated pushes + comment pulls)</td><td>Both off the critical path; either can die with zero product impact</td></tr>
-</table></div>
+  <h2>The first architecture: never touch the corpus</h2>
+  <p>The first durable decision was negative: <strong>cr8 does not write into the music archive</strong>. It scans the corpus, parses what it can, and writes opinions into a database. The corpus is authority. The catalog is interpretation. The mirror is disposable. That split is why the system can move quickly without risking years of unreleased work.</p>
+  <p>The Python package owns the pipeline. <code>cr8 scan</code> walks configured roots and classifies files. Resolve groups bounces into songs. Enrichment imports key, BPM, fingerprints, and human corrections. Build creates streamable audio, waveform peaks, covers, and later stem mirrors. Verify proves that catalog, mirror, and claims still agree.</p>
+  <p>The app’s important data model is not a single track table. It is relationships: songs, bounces, users, sessions, reactions, listen progress, collections, shares, invites, uploads, assignments, jobs, stems. That is how listening grows into homework, presence, and public links without changing the core.</p>
 
-<h2>Security model (the authenticated app is a public HTTPS surface)</h2>
-<ul>
-  <li><b>Accounts:</b> Argon2 password hashes and individual usernames; generated member passwords are shown once; all accounts have the same full access.</li>
-  <li><b>Sessions:</b> opaque 256-bit IDs stored only as keyed digests; HttpOnly, Secure, SameSite=Lax cookies expire after 30 days.</li>
-  <li><b>Serving:</b> media by catalog lookup only (no client paths), <span class="p">resolve(strict)</span> + containment; the service account has read-only mirror access and no access to originals.</li>
-  <li><b>Writes:</b> same-origin session cookies plus a required custom CSRF header; autoescape, no-referrer, frame denial, request throttling, and capped Range headers.</li>
-  <li><b>Host:</b> FileVault on, tagged Tailscale node (no key expiry), secrets in files readable only by the service account, and a nightly external authentication-boundary probe.</li>
-</ul>
+  <h2>The route a tap actually takes</h2>
+  <p>When someone presses play far from the machine that holds the archive, the expensive part of “feeling fast” should not all travel to that machine. The app shell, JavaScript, CSS, and warm static routes can live near the listener. The origin answers the parts that must come from the private catalog and media mirror: API truth, range audio, art.</p>
+  <p>In production shape, a public HTTPS face fronts a Next.js app that same-origin proxies to a local FastAPI owner process. Missing rewrites are scar tissue: if the browser can’t reach an API path through the web origin, features die quietly. The proxy list is load-bearing.</p>
 
-<h2>Design system (ratified 2026-07-29)</h2>
-<p>Forged from an 8-site reference audit (NTS, Bandcamp, Ableton, teenage.engineering, Poolsuite,
-Boiler Room, Samply, Untitled) → 3 archetypes → 6 token-true mockups → anti-slop pass → bake-off.</p>
-<ul>
-  <li><b>Base — Studio Vault:</b> Instrument Sans + IBM Plex Mono for all metadata; soft-black
-  #191919, gradient elevation, white-alpha text ladder; the <em>version rail</em> (a song's
-  history as a tappable commit graph) is the signature move.</li>
-  <li><b>Grafts REMOVED (2026-07-30):</b> the console (A) and flyer-poster (C) languages were
-  grafted onto B and the result read as three grammars fighting. Owner ruling: <b>B is the
-  entire system</b>. The A console table and the C poster stack (Archivo Black, 78px uppercase
-  headlines, rotated ticket stamps) are being stripped from both surfaces.</li>
-  <li><b>Signal red</b> means UNHEARD and nothing else. <b>Era hues</b> mean eras — never
-  "selected". Selection is a weight + colour shift, never a coloured accent rail.</li>
-  <li><b>Era palette</b> (from the artist's own album-tag history):
-  <span class="dot" style="background:var(--pelicana)"></span>PELICANA ·
-  <span class="dot" style="background:var(--nova)"></span>NOVA1 ·
-  <span class="dot" style="background:var(--working)"></span>working — covers are generated
-  color fields; artwork supplies all saturation, UI stays neutral.</li>
-  <li><b>Playback rulings:</b> plain <span class="p">&lt;audio&gt;</span> + Media Session; peaks
-  pre-generated (never client-decoded); Safari-tab-first on iOS — add-to-home-screen never
-  promoted (iOS 26 PWA audio regression, verified).</li>
-</ul>
+  <h2>Architecture diagram</h2>
+  <figure class="diagram" aria-label="cr8 request path">
+    <div class="lane listener"><b>Listener</b><span>Phone or laptop</span><small>HTTPS, audio Range requests</small></div>
+    <div class="arrow">→</div>
+    <div class="lane edge"><b>Edge</b><span>CDN / tunnel front</span><small>Static shell near listener</small></div>
+    <div class="arrow">→</div>
+    <div class="lane next"><b>Next.js</b><span>public face</span><small>UI + same-origin proxy</small></div>
+    <div class="arrow">→</div>
+    <div class="lane api"><b>FastAPI + SQLite</b><span>catalog &amp; sessions</span><small>Truth about songs and people</small></div>
+    <div class="arrow">→</div>
+    <div class="lane media"><b>Mirror</b><span>MP3 · peaks · art · stems</span><small>Derived from read-only corpus</small></div>
+  </figure>
+  <p>A request is best read in zones: listener, edge, web shell, API/catalog, derived media. The first zones are about feeling instant. The last two are about not lying and not mutating the archive.</p>
 
-<h2>Coverage guarantee</h2>
-<p>"Every single track" is a checked invariant, not a claim: <span class="p">cr8 verify</span>
-runs V1–V9 — disk↔catalog in both directions, unclassified locations fail loudly, entity closure
-(file → bounce → song), per-dimension tag coverage with exact gap lists, mirror integrity,
-remote counts, review-queue SLA, backup freshness. Nightly, with a dated report.</p>
+  <h2>Why it feels fast</h2>
+  <p>Audio is range-served. The library is virtualized. Payload budgets, interaction budgets, and play-latency budgets are enforced in a gate that can refuse a deploy. Speed is not a vibe; it is a ship condition.</p>
+  <p>Latency-sensitive work should be near the listener when possible. Durable work — catalog truth, secrets, the corpus path — stays home.</p>
 
-<h2>Build status</h2>
-<div class="tw"><table class="status">
-  <tr><th>Unit</th><th>State</th><th>Evidence</th></tr>
-  <tr><td>Catalog core (schema, scanner, parser, resolver, review, verify)</td><td class="ok">Built + verified</td><td class="num">11,293 files scanned; 100% curated parse; idempotent rescan; zero corpus writes</td></tr>
-  <tr><td>Enrichment (MIK import, key/BPM detect, fingerprints, scrub)</td><td class="ok">Built + verified</td><td class="num">keys 351/472 (74%), BPM 466/472; 2,264 derived tags backfilled</td></tr>
-  <tr><td>Mirror (mp3-320 + peaks + covers + ReplayGain)</td><td class="ok">Built + verified</td><td class="num">657 tracks; rebuild → 0 changed</td></tr>
-  <tr><td>Band app — one authenticated process</td><td class="ok">Built + LIVE</td><td>Desktop three-region shell; member logins and attributed writes verified; HTTPS 443 funnels to port 8080</td></tr>
-  <tr><td>Dig engine (shuffle / DIG / queue / tappable rows)</td><td class="ok">Built + verified</td><td>SHUFFLE EVERYTHING, contextual SHUFFLE THIS, weighted DIG, drag-reorder queue</td></tr>
-  <tr><td>Stems (UVR models, local, queued)</td><td class="ok">Built + verified</td><td class="num">5 stems in ~53 s/song on M1 Max; MPS + CoreML active; playable in the app</td></tr>
-  <tr><td>Released tag (exclude released from listening)</td><td class="ok">Built</td><td class="num">471 demo + 1 released; excluded from library, DIG, and shuffle</td></tr>
-  <tr><td>Automation (ingest watch-folder, nightly, doctor, launchd)</td><td class="ok">Built + loaded</td><td>Both LaunchAgents active; flock proven; ping only on a clean sweep</td></tr>
-  <tr><td>Backup</td><td class="ok">Verified snapshot</td><td class="num">restic 8d0c0f97 — 119.26 GiB, 23,019 files, restorable (local repo; offsite still open)</td></tr>
-  <tr><td>Design — adopt B wholesale, strip A/C grafts</td><td class="ok">Built</td><td>The single authenticated app uses the Studio Vault language throughout</td></tr>
-  <tr><td>Desktop composition (focal points, state clarity, escape/reset)</td><td class="pending">Next</td><td>Song detail floats in a 1400px void — mockups were phone frames, desktop was never composed</td></tr>
-  <tr><td>Rename</td><td class="pending">Blocked on owner</td><td>"cr8" rejected; owner choosing</td></tr>
-  <tr><td>Optional layers + gated cleanup</td><td class="pending">Queued</td><td>Navidrome sidecar; ~12.8 GB APFS-clone dedupe behind a restore drill</td></tr>
-  </table></div>
+  <h2>The interface became a listening instrument</h2>
+  <p>The UI is organized around continuous listening: a dock, a library that digs, filters that don’t fight you, tags that write while music plays, shares that open as honest pages. Empty states render nothing ornamental. Color comes from data (Camelot keys, eras), not from a theme pack.</p>
 
-<div class="warn"><b>Standing risk:</b> the verified 119 GiB backup lives on the same disk as the corpus. It protects against deletion and corruption, not drive failure — a second machine or an offsite repo is still open. Destructive cleanup stays gated behind a restore drill.</div>
+  <h2>What each subsystem is for</h2>
+  <ul>
+    <li><strong>Pipeline (<code>cr8</code>)</strong> — scan, resolve, enrich, build, verify</li>
+    <li><strong>Catalog (SQLite)</strong> — songs, people, reactions, shares, jobs</li>
+    <li><strong>Owner API (FastAPI)</strong> — authenticated app surface and public share landings</li>
+    <li><strong>Web (Next.js)</strong> — the listening instrument</li>
+    <li><strong>Ops</strong> — deploy, tunnels, launch agents (identity via env, not hardcoded hosts)</li>
+  </ul>
 
-<h2>Decision log (the contested calls, adjudicated)</h2>
-<ul>
-  <li><b>Build a thin app</b> over adopting/forking a streamer — verified: no maintained OSS does attributed tag-while-listening over this catalog model. OSS-first is satisfied one layer down (every hard sub-problem uses a maintained tool).</li>
-  <li><b>Custom CLI + SQLite over beets</b> — the song entity must be native; every hard piece is custom anyway; beets' rename/move/MusicBrainz muscles are all forbidden here.</li>
-  <li><b>mp3-320 mirror over FLAC</b> — reuses the artist's own 586 exports byte-for-byte; losslessness is the backup's job, not the mirror's.</li>
-  <li><b>Album = song, tracklist = version history</b> — the one thing no existing client can show; era identity via covers + tag instead.</li>
-  <li><b>One app, individual accounts</b> — every bandmate signs in, receives full access, and owns the attribution on their tags, hearts, verdicts, and notes.</li>
-  <li><b>Tagging stays close to playback</b> — quick chips support listening flow while the full tag editor and batch tools remain available to every member.</li>
-  <li><b>Nightly API pulls, no webhooks</b> — a public always-on endpoint is the top silent-death candidate; at band scale, nightly is live enough.</li>
-  <li><b>rsync guarded four ways</b> (sentinel, mountpoint, count, --max-delete) — the empty-source wipe is the classic self-hosting data-loss chain.</li>
-</ul>
+  <h2>The constraints made the shape</h2>
+  <p>Never write the corpus. Prefer rebuildable mirrors. Keep secrets and operator identity out of the public tree. Measure what a visitor pays (JS bytes, play latency) and refuse to ship when the numbers lie.</p>
 
-<h2>Costs</h2>
-<p class="num">Backblaze B2 ≈ $0.75–1/mo. Everything else $0: Tailscale free tier (node
-sharing + funnel), all-OSS stack, healthchecks.io free tier, Samply free tier if kept.
-Optional one-time: play:Sub $4.99 (Navidrome sidecar phase).</p>
+  <h2>What should stay open</h2>
+  <p>The software is MIT. Anyone can run a crate. Circles form with invites and shares. Federation can come later; clean boundaries now make that future possible without forcing a platform.</p>
 
-<p class="foot">Repo: <span class="p">~/Music/Catalog</span> — specs in <span class="p">specs/</span>,
-design canon + ratification in <span class="p">canon/</span>, verification reports in
-<span class="p">reports/</span>. Recon + adjudication transcripts preserved in the session's
-workflow outputs.</p>
+  <p class="sources">
+    <a href="./">Home</a> ·
+    <a href="vision.html">Vision</a> ·
+    <a href="https://github.com/hareeshnagaraj/cr8">GitHub</a> ·
+    Install notes in the repository README
+  </p>
 </main>
+</body>
+</html>

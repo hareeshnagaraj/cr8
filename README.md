@@ -18,6 +18,17 @@ listeners. They need something fast, reliable, and theirs.
 
 ---
 
+## The full story (formatted)
+
+The README is the install path. The designed explanation lives on GitHub Pages,
+in the same brief format as the long-form notes:
+
+- **[Landing](https://hareeshnagaraj.github.io/cr8/)** — what cr8 is
+- **[Vision](https://hareeshnagaraj.github.io/cr8/vision.html)** — why unreleased music needs a room
+- **[Architecture](https://hareeshnagaraj.github.io/cr8/architecture.html)** — corpus → catalog → mirror → app
+
+---
+
 ## Why it exists
 
 - We didn’t like the sample-share tools. Everything’s a SaaS with the wrong

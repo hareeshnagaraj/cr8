@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>cr8 — a private room for unreleased music</title>
+  <meta name="description" content="Self-hosted, open source listening software for original music. Not a SaaS. Run your own crate, invite friends, tag while it plays.">
+  <link rel="canonical" href="https://hareeshnagaraj.github.io/cr8/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="cr8">
+  <meta property="og:title" content="cr8 — a private room for unreleased music">
+  <meta property="og:description" content="Self-hosted, open source listening software for original music. Not a SaaS. Run your own crate, invite friends, tag while it plays.">
+  <meta property="og:url" content="https://hareeshnagaraj.github.io/cr8/">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="cr8 — a private room for unreleased music">
+  <meta name="twitter:description" content="Self-hosted, open source listening software for original music. Not a SaaS.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <header>
+    <nav class="nav" aria-label="Site">
+      <a class="is-here" href="./">Home</a>
+      <a href="vision.html">Vision</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="https://github.com/hareeshnagaraj/cr8">GitHub</a>
+    </nav>
+    <div class="kicker">cr8 · open source</div>
+    <h1>A private room for unreleased music</h1>
+    <p class="dek">Self-hosted listening software for original work. Not a SaaS. Not a feed. A crate you run yourself — hear it, tag it, send a link that actually works.</p>
+    <div class="cta">
+      <a class="primary" href="https://github.com/hareeshnagaraj/cr8">Get the code</a>
+      <a href="vision.html">Why this exists</a>
+      <a href="architecture.html">How it works</a>
+    </div>
+    <p class="meta">MIT licensed · clone → <code>cr8 init</code> → run</p>
+  </header>
+
+  <section class="notegrid" aria-label="What cr8 is">
+    <div class="note">
+      <b>Private first</b>
+      <span>The archive can stay on your machine. The listening layer is what travels.</span>
+    </div>
+    <div class="note">
+      <b>Friend-scale</b>
+      <span>Built for circles with taste — not a million anonymous listeners.</span>
+    </div>
+    <div class="note">
+      <b>Archive as room</b>
+      <span>Old bounces become a place people can hear, tag, remember, and send.</span>
+    </div>
+    <div class="note">
+      <b>Many crates</b>
+      <span>The network grows from small trusted rooms — not one public feed.</span>
+    </div>
+  </section>
+
+  <div class="pull">Every artist gets their own crate. Every trusted friend gets a real way to hear and respond. The archive stays close to the person who made it.</div>
+
+  <h2>The problem it solves</h2>
+  <p>Released music has too much infrastructure. Unreleased music has almost none. Folders don’t help you find the good bounce. Upload tools don’t understand tags. Streaming apps assume the song is finished.</p>
+  <p>So the work is technically stored and practically missing. cr8 is software for the middle: demos, versions, judgment while the music is on.</p>
+
+  <h2>What you get</h2>
+  <ul>
+    <li><strong>Library</strong> — dig, filter, shuffle a real archive</li>
+    <li><strong>Tag while it plays</strong> — status, key, vibe, keepers, collabs</li>
+    <li><strong>Send a link</strong> — friends listen without hunting a folder</li>
+    <li><strong>Invite a circle</strong> — members, presence, shared listening</li>
+    <li><strong>Stems when you need them</strong> — local separation, optional tools</li>
+  </ul>
+  <p>The original files stay <strong>read-only</strong>. Opinions live in a catalog. Streams come from a disposable mirror you can rebuild.</p>
+
+  <h2>Not a business</h2>
+  <p>This is a project. Most personal circles don’t need a stadium product. They need something fast, reliable, and theirs — that friends can run too.</p>
+
+  <h2>Start here</h2>
+  <p>Full install instructions live in the repository README. The short path:</p>
+  <p><code>git clone https://github.com/hareeshnagaraj/cr8.git</code> → <code>cr8 init</code> → API on <code>:8080</code>, web on <code>:3100</code> → open <code>/setup</code>.</p>
+
+  <p class="sources">
+    Read more: <a href="vision.html">Vision</a> ·
+    <a href="architecture.html">Architecture</a> ·
+    <a href="https://github.com/hareeshnagaraj/cr8">Source on GitHub</a>
+  </p>
+</main>
+</body>
+</html>
