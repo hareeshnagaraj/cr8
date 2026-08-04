@@ -7,8 +7,9 @@ import {PlayerProvider} from "@/components/PlayerProvider";
 import {Shell} from "@/components/Shell";
 
 const SITE = "cr8";
+const TITLE = "cr8 — a private room for unreleased music";
 const DESCRIPTION =
-  "A private room for unreleased music — hear the archive, tag while it plays, send a link that actually works.";
+  "Self-hosted open source listening for original music. Not a SaaS. Hear the archive, tag while it plays, send a link that works.";
 // Absolute OG URLs for iMessage/Slack. Prefer public origin; local dev still works.
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || "https://cr8.li";
@@ -16,7 +17,7 @@ const SITE_URL =
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: SITE,
+    default: TITLE,
     template: `%s · ${SITE}`,
   },
   description: DESCRIPTION,
@@ -24,7 +25,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: SITE,
-    title: "cr8 — a room for unreleased music",
+    title: TITLE,
     description: DESCRIPTION,
     url: SITE_URL,
     images: [
@@ -32,13 +33,13 @@ export const metadata: Metadata = {
         url: "/og.png",
         width: 1200,
         height: 630,
-        alt: "cr8 — a room for unreleased music",
+        alt: TITLE,
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "cr8 — a room for unreleased music",
+    title: TITLE,
     description: DESCRIPTION,
     images: ["/og.png"],
   },

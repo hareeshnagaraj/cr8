@@ -1,0 +1,40 @@
+name: Feature request
+description: Propose something for the crate (local-first, friend-scale)
+title: "[feat] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What is awkward or missing when listening / tagging / sharing?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: Smallest change that would help. Prefer local-first.
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Out of scope
+      description: What we should not build yet
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Surface
+      options:
+        - Library / dig
+        - Player / dock
+        - Tags / hearts
+        - Shares / invites
+        - Stems
+        - Setup / onboarding
+        - Ops / deploy
+        - Docs / Pages
+        - Other
+    validations:
+      required: true

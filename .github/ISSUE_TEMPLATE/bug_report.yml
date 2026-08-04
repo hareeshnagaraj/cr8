@@ -1,0 +1,25 @@
+name: Bug report
+description: Something broken in local or self-hosted cr8
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+    validations:
+      required: true
+  - type: textarea
+    id: expect
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: input
+    id: repro
+    attributes:
+      label: Repro (OS, browser, cr8 commit if known)
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / screenshot notes

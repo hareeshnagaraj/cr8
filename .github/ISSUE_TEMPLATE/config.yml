@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Story / vision pages
+    url: https://hareeshnagaraj.github.io/cr8/
+    about: Product story (not for bugs)
+  - name: Collaborator handoff
+    url: https://hareeshnagaraj.github.io/cr8/handoff.html
+    about: Fully local setup + agent prompt
