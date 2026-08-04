@@ -2242,7 +2242,6 @@ input[type="number"]::-webkit-outer-spin-button {
   .song { padding-bottom: 150px; }
   .song-art { width: 64px; height: 64px; }
   .song-title { font-size: 1.25rem; }
-  .song-transport-rest { margin-left: 0; width: 100%; }
   .song-transport > .primary,
   .song-transport-rest .chip,
   .song-download .menu-trigger { min-height: 44px; }
