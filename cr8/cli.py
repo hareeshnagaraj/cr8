@@ -196,6 +196,15 @@ def build_parser() -> argparse.ArgumentParser:
     push_parser.add_argument("--dry-run", action="store_true")
     push_parser.add_argument("--rescan-url")
 
+    peer_parser = subparsers.add_parser("peer", help="run the P2P mirror peer process")
+    peer_parser.add_argument("--host", default="127.0.0.1", help="interface to bind (default: 127.0.0.1)")
+    peer_parser.add_argument("--port", type=int, default=8001)
+    peer_parser.add_argument("--mirror-root", type=Path, default=Path("mirror"))
+    peer_parser.add_argument("--secrets-dir", type=Path, default=Path("secrets"),
+                             help="directory for the persistent identity key (default: secrets/)")
+    peer_parser.add_argument("--allowlist", default=None,
+                             help="comma-separated peer IDs allowed to read; required when --host != 127.0.0.1")
+
     stems_parser = subparsers.add_parser(
         "stems", help="separate and manage archival stems"
     )
@@ -373,6 +382,27 @@ def _execute(args: argparse.Namespace) -> int:
             status = "SKIP" if stage.skipped else ("OK" if stage.ok else "FAILED")
             print(f"{stage.name}: {status} — {stage.detail}")
         return 0 if all(stage.ok for stage in results) else 1
+
+    if args.command == "peer":
+        try:
+            from .peer import run_peer  # libp2p is an optional extra
+        except ImportError:
+            print(
+                "cr8 peer requires the 'peer' extra: pip install 'cr8[peer]'",
+                file=sys.stderr,
+            )
+            return 2
+        allowed: set[str] | None = None
+        if args.allowlist:
+            allowed = {p.strip() for p in args.allowlist.split(",") if p.strip()}
+        run_peer(
+            args.host,
+            args.port,
+            args.mirror_root,
+            args.secrets_dir,
+            allowed,
+        )
+        return 0
 
     connection = connect(db_path)
     try:
