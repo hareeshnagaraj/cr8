@@ -370,7 +370,16 @@ export default function Library() {
         })}
       </div>
       {!loading && !tracks.length ? (
-        <p className="empty">Nothing here. Try clearing a filter.</p>
+        filtersActive ? (
+          <p className="empty">Nothing here. Try clearing a filter.</p>
+        ) : (
+          <div className="empty-catalog">
+            <p>Your library is empty.</p>
+            <p className="empty-catalog-sub">
+              Run <code className="empty-catalog-cmd">cr8 scan</code> in your terminal or configure your corpus.
+            </p>
+          </div>
+        )
       ) : null}
       </div>
       </div>
